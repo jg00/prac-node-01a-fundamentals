@@ -29,4 +29,4 @@ const pool = mysql.createPool({
   database: "node-complete"
 });
 
-exports.module = pool;
+module.exports = pool.promise();
