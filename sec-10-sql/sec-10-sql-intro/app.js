@@ -19,13 +19,19 @@ const shopRoutes = require("./routes/shop");
     db.query() - execute() may be safer option
     db.end() - end() when our application is to shut down
 */
-db.execute("SELECT * FROM products")
-  .then(result => {
-    console.log(result[0], result[1]);
+
+/* Test code only */
+/* db.execute("SELECT * FROM products")
+  .then(([rows, fieldData]) => {
+    // console.log(result[0], result[1]);
+    // console.log(result[0][0]);
+    // console.log(result);
+    console.log(rows)
+    console.log(fieldData);
   })
   .catch(err => {
     console.log(err);
-  });
+  }); */
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
