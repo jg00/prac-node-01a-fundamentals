@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 
 const requestHandler = (req, res) => {
   const url = req.url;
@@ -39,7 +40,8 @@ const requestHandler = (req, res) => {
       const message = parsedBody.split("=")[1];
 
       // fs.writeFileSync("message.txt", message); // Use writeFile instead to run async code.
-      fs.writeFile("message.txt", message, err => {
+      // console.log(path.join(__dirname, "message.txt"));
+      fs.writeFile(path.join(__dirname, "message.txt"), message, err => {
         // This response should be set only when we are done with the file.
         // res.writeHead(302, { Location: "/" });
         res.statusCode = 302; // 302 Found is a common way of performing URL redirection
