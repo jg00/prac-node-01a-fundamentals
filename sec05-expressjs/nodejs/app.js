@@ -1,28 +1,34 @@
 // const http = require("http");
 
 const express = require("express");
-
 const app = express();
 
-app.use("/", (req, res, next) => {
-  console.log("This always runs");
-  next();
-});
+const adminRoutes = require("./routes/admin");
+const shopRoutes = require("./routes/shop");
 
-app.use("/add-product", (req, res, next) => {
-  console.log("In the add product middleware!");
-  // res.setHeader("content-type", "text/plain");
-  res.send('<h1>The "Add Product" Page</h1>');
-});
+app.use(express.urlencoded({ extended: false }));
 
-app.use("/", (req, res, next) => {
-  console.log("In hello from express middleware!");
-  // res.setHeader("content-type", "text/plain");
-  res.send("<h1>Hello from Express Two!</h1>");
-});
+app.use("/admin", adminRoutes);
+app.use(shopRoutes);
+
+// Check only
+/*
+  app.use((req, res, next) => {
+    console.log(req.url);
+    next();
+  });
+*/
 
 // 204: No Content
-app.get("/favicon.ico", (req, res, next) => res.status(204));
+app.use("/favicon.ico", (req, res, next) => {
+  res.status(204).end();
+  // res.status(204).send("No Content");
+  // res.sendStatus(204);
+});
+
+app.use((req, res, next) => {
+  res.status(404).send("<h1>Page not found</h1>");
+});
 
 app.listen(3000);
 
