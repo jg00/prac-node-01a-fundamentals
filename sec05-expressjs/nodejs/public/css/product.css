@@ -1,0 +1,47 @@
+/* 
+    Referenced from the following:
+    add-product.html
+*/
+
+/* Start of main */
+/* Start of form container */
+.product-form {
+  /* border: 1px dotted green; */
+  width: 20rem;
+  max-width: 90%; /* Applied for mobile view */
+  margin: auto; /* Center form */
+}
+
+.form-control {
+  margin: 1rem 0;
+}
+
+.form-control label,
+.form-control input {
+  /* border: 1px dotted green; */
+  display: block;
+  width: 100%; /* Input box fills width */
+}
+
+.form-control input {
+  /* border: 1px dotted green; */
+  font: inherit;
+  border-radius: 2px;
+}
+
+button {
+  font: inherit;
+  border: 1px solid #3e00a1;
+  color: #3e00a1;
+  background: white;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+button:hover,
+button:active {
+  background-color: #3e00a1;
+  color: white;
+}
+/* End of form container */
+/* End of main */
