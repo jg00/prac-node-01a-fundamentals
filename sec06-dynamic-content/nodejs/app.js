@@ -4,13 +4,22 @@ const path = require("path");
 const express = require("express");
 const app = express();
 
-const adminRoutes = require("./routes/admin");
+// const ejs = require("ejs");
+
+// app.set() is used to set a global configuration value on our express application.  We can use app.get() to get that value for the property.
+// We can provide 'reserved' keywords
+app.set("view engine", "pug"); // pug is supported out of the box
+app.set("views", "views");
+
+// const adminRoutes = require("./routes/admin");
+const adminData = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public"))); // Express forwards any requests for images, .css, .js, etc. to look in this folder.
 
-app.use("/admin", adminRoutes);
+// app.use("/admin", adminRoutes);
+app.use("/admin", adminData.routes);
 app.use(shopRoutes);
 
 // Check only
