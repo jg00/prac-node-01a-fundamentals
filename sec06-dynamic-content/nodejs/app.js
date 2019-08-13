@@ -4,11 +4,15 @@ const path = require("path");
 const express = require("express");
 const app = express();
 
-// const ejs = require("ejs");
+const expressHbs = require("express-handlebars");
 
 // app.set() is used to set a global configuration value on our express application.  We can use app.get() to get that value for the property.
 // We can provide 'reserved' keywords
-app.set("view engine", "pug"); // pug is supported out of the box
+app.engine("hbs", expressHbs()); // Give the engine any name (ie 'handlebars' is what we used), and call the function to initialze.
+app.set("view engine", "hbs");
+
+// app.set("view engine", "pug"); // pug is supported out of the box.  No need to require pug.
+
 app.set("views", "views");
 
 // const adminRoutes = require("./routes/admin");
