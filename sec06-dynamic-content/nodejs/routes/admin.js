@@ -15,7 +15,11 @@ router.get("/add-product", (req, res, next) => {
 
   // console.log("/add-product rootDir:", rootDir);
   // res.sendFile(path.join(__dirname, "../", "views", "add-product.html"));
-  res.sendFile(path.join(rootDir, "views", "add-product.html"));
+  // res.sendFile(path.join(rootDir, "views", "add-product.html"));
+  res.render("add-product", {
+    pageTitle: "Add Product",
+    path: "/admin/add-product" // Note property path value is arbitrary and will be used in our template to control UI features
+  });
 });
 
 // POST /admin/add-product
