@@ -8,7 +8,14 @@ const expressHbs = require("express-handlebars");
 
 // app.set() is used to set a global configuration value on our express application.  We can use app.get() to get that value for the property.
 // We can provide 'reserved' keywords
-app.engine("hbs", expressHbs()); // Give the engine any name (ie 'handlebars' is what we used), and call the function to initialze.
+app.engine(
+  "hbs", // Give the engine any name (ie 'handlebars' is what we used), and call the function  below to initialze.
+  expressHbs({
+    layoutsDir: "views/layouts",
+    defaultLayout: "main-layout",
+    extname: "hbs" // Applied to default layout out only.  Now this is configured to look for a default layout called main-layout.hbs and not main-layout.handlebars
+  }) // This is specific to configure 'layout' with handlebars
+);
 app.set("view engine", "hbs");
 
 // app.set("view engine", "pug"); // pug is supported out of the box.  No need to require pug.

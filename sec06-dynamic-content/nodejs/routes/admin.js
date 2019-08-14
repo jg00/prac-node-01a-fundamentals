@@ -18,7 +18,12 @@ router.get("/add-product", (req, res, next) => {
   // res.sendFile(path.join(rootDir, "views", "add-product.html"));
   res.render("add-product", {
     pageTitle: "Add Product",
-    path: "/admin/add-product" // Note property path value is arbitrary and will be used in our template to control UI features
+    path: "/admin/add-product", // Note property path value is arbitrary and will be used in our template to control UI features
+
+    // Below allow us to add css files and control class behavior in main-layout.hbs
+    formsCSS: true,
+    productCSS: true,
+    activeAddProduct: true
   });
 });
 
