@@ -1,6 +1,8 @@
 // const http = require("http");
 const path = require("path");
 
+const errorController = require("./controllers/error");
+
 const express = require("express");
 const app = express();
 
@@ -31,15 +33,15 @@ const app = express();
 app.set("view engine", "ejs");
 app.set("views", "views");
 
-// const adminRoutes = require("./routes/admin");
-const adminData = require("./routes/admin");
+// const adminData = require("./routes/admin");
+const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public"))); // Express forwards any requests for images, .css, .js, etc. to look in this folder.
 
-// app.use("/admin", adminRoutes);
-app.use("/admin", adminData.routes);
+// app.use("/admin", adminData.routes);
+app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 
 // Check only
@@ -51,17 +53,10 @@ app.use(shopRoutes);
 */
 
 // 204: No Content
-app.use("/favicon.ico", (req, res, next) => {
-  res.status(204).end();
-  // res.status(204).send("No Content");
-  // res.sendStatus(204);
-});
+app.use("/favicon.ico", errorController.get204);
 
-app.use((req, res, next) => {
-  // res.status(404).send("<h1>Page not found</h1>");
-  // res.status(404).sendFile(path.join(__dirname, "views", "404.html"));
-  res.status(404).render("404", { pageTitle: "Page Not Found", path: "/" });
-});
+// 404: Page Not Found
+app.use(errorController.get404);
 
 app.listen(3000);
 
