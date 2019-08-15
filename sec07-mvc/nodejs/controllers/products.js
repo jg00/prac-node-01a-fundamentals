@@ -1,4 +1,6 @@
-const products = [];
+const Product = require("../models/product"); // Import Product class.
+
+// const products = []; // No longer needed.  Moved to model/products.js.
 
 // Reference from routes/admin.js
 exports.getAddProduct = (req, res, next) => {
@@ -23,9 +25,11 @@ exports.getAddProduct = (req, res, next) => {
 // Reference from routes/admin.js
 exports.postAddProduct = (req, res, next) => {
   //   console.log("In the post /add-product");
-  console.log(req.body);
+  // console.log(req.body);
+  // products.push({ title: req.body.title }); // Pushing a new {} with title property but could have also pushed the req.body {} directly.
 
-  products.push({ title: req.body.title }); // Pushing a new {} with title property but could have also pushed the req.body {} directly.
+  const product = new Product(req.body.title);
+  product.save(); // You now have access to 'this' when .save() is called.
   res.redirect("/");
 };
 
@@ -39,6 +43,7 @@ exports.getProducts = (req, res, next) => {
   // console.log("shop.js", adminData.products); // Note - This is possible to share data within our Node server scope.  Therefore shared across 'all' users.
   // const products = adminData.products; // [ {title: 'a'}, {title: 'b'}]
 
+  const products = Product.fetchAll();
   res.render("shop", {
     prods: products, // Inject as an object with a key name that we can refer to in the template.
     pageTitle: "Shop",
