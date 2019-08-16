@@ -59,16 +59,47 @@ module.exports = class Product {
     // Remember this is async code and will require a callback
     fs.readFile(p, (err, fileContent) => {
       if (err) {
-        // return []; // Empyt array because that is what fetchAll expects.
+        // return []; // Empty array because that is what fetchAll expects.
         // Remember if 'return [];' here we get undefined and our view show.js will get an error.
-        // Instead of returning an array we execute the callback function passed into fetchAll()
+        // Instead of returning an array we execute the callback function passed into fetchAll([products]) that exepects a list of products.
+        // We no longer return anything.
         cb([]);
       }
 
+      // return JSON.parse(fileContent) // Does not return data in time.
       // If no error and once you retrieve the data asynchronously, execute the callback cb(products)
       cb(JSON.parse(fileContent)); // Executing this callback will call the res.render('shop', {...})
     });
   }
+
+  // Original version and issues if async code not handled.
+  /*
+    Here is what is happening:
+    1 const p = path.join({}) is executed
+    2a fs.readFile(p, (err,fileContent) => { should return data eventually }) is executed
+    2b Note that the (err,fileContent) => {}) callback is initially only 'registered'.
+    2c Remember that (err, fileContent) => {}) 'belongs' to fs.readFile() 
+      and not the overall function fetchAll().
+    3 Finally this function fetchALL() is completed but because we do not handle async code,
+      this overall function fetchAll() never returns any data the caller is expecting.
+      Therefore 'undefined' is returned.
+  */
+  /*
+  static fetchAll() {
+    const p = path.join(
+      path.dirname(process.mainModule.filename),
+      "data",
+      "products.json"
+    );
+
+    fs.readFile(p, (err, fileContent) => {
+      if (err) {
+        return [];
+      }
+      return JSON.parse(fileContent); // Does not return data in time.
+    });
+  }
+  */
 };
 
 // 1 Save to Array

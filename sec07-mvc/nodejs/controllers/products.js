@@ -45,6 +45,7 @@ exports.getProducts = (req, res, next) => {
   // Product.fetchAll(callback function)
   // Main idea here is we render the view only after all the fetching
   // of the products data is done.
+  // Now the overall function .fetchAll will not return anything.
   Product.fetchAll(products => {
     res.render("shop", {
       prods: products, // Inject as an object with a key name that we can refer to in the template.
@@ -55,5 +56,23 @@ exports.getProducts = (req, res, next) => {
       productCSS: true
       // layout: false // Special handlebars 'layout' key to disable default behavior of handlebars to use template.
     });
+  });
+};
+
+/*
+Issue will be .fetchAll() is expecting an array of products.
+However, the .fetchAll() is executing an async code to retrieve data from a file.
+Need to handle async code accordingly.
+*/
+exports.getProducts = (req, res, next) => {
+  const products = Product.fetchAll();
+  res.render("shop", {
+    prods: products, // Inject as an object with a key name that we can refer to in the template.
+    pageTitle: "Shop",
+    path: "/",
+    hasProducts: products.length > 0, // For handlebars that only handles true/false.  Conditional stmts not allowed with handlebars.
+    activeShop: true,
+    productCSS: true
+    // layout: false // Special handlebars 'layout' key to disable default behavior of handlebars to use template.
   });
 };
