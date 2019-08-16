@@ -20,6 +20,7 @@ module.exports = class Product {
   }
 
   save() {
+    // console.log("this:", this);  // this: Product { title: 'Mastery2' }
     const p = path.join(
       path.dirname(process.mainModule.filename),
       "data",
@@ -27,10 +28,8 @@ module.exports = class Product {
     );
 
     // Note to ensure that 'this' refers to the class you need to use arrow function, otherwise 'this' will lose it's context and will not refer to the class anymore
-    // File is created if it does not exists
+    // .readFile() does not create a file if it does not exists.
     fs.readFile(p, (err, fileContent) => {
-      console.log("1", fileContent); // undefined could mean no file found
-      console.log("2", err);
       let products = [];
 
       // In this case we know the file is a .json file
@@ -41,16 +40,34 @@ module.exports = class Product {
       }
       products.push(this); // Regardless if file exists it still pushes 'this' received from when the product object was created.
 
-      // By this time a file should have been created by .readFile if one did not exits.
+      // .writeFile() will create a file if it does not exits.  If will also replace an existing file.
+      // JSON.stringyfy() takes Javascript array or object and converts it to JSON
       fs.writeFile(p, JSON.stringify(products), err => {
-        console.log("3", err);
-        console.log("4", JSON.stringify(products));
+        console.log(err);
       });
     });
   }
 
-  static fetchAll() {
-    return products;
+  // Ref controllers/products.js > exports.getProducts
+  static fetchAll(cb) {
+    const p = path.join(
+      path.dirname(process.mainModule.filename),
+      "data",
+      "products.json"
+    );
+
+    // Remember this is async code and will require a callback
+    fs.readFile(p, (err, fileContent) => {
+      if (err) {
+        // return []; // Empyt array because that is what fetchAll expects.
+        // Remember if 'return [];' here we get undefined and our view show.js will get an error.
+        // Instead of returning an array we execute the callback function passed into fetchAll()
+        cb([]);
+      }
+
+      // If no error and once you retrieve the data asynchronously, execute the callback cb(products)
+      cb(JSON.parse(fileContent)); // Executing this callback will call the res.render('shop', {...})
+    });
   }
 };
 

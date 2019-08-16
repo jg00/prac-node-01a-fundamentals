@@ -2,7 +2,7 @@ const Product = require("../models/product"); // Import Product class.
 
 // const products = []; // No longer needed.  Moved to model/products.js.
 
-// Reference from routes/admin.js
+// Reference from controllers/products.js
 exports.getAddProduct = (req, res, next) => {
   // console.log("In the add product middleware!");
   // res.send('<form action="/admin/add-product" method="POST"><input type="text" name="title"><input type="text" name="author"><button type="submit">Add Product</button></form>');
@@ -22,7 +22,7 @@ exports.getAddProduct = (req, res, next) => {
   });
 };
 
-// Reference from routes/admin.js
+// Reference from controllers/products.js
 exports.postAddProduct = (req, res, next) => {
   //   console.log("In the post /add-product");
   // console.log(req.body);
@@ -33,7 +33,6 @@ exports.postAddProduct = (req, res, next) => {
   res.redirect("/");
 };
 
-// Referenced from routes/shop.js
 exports.getProducts = (req, res, next) => {
   // console.log(path.join(__dirname, "../", "views", "shop.html"));
   // res.sendFile(path.join(__dirname, "../", "views", "shop.html"));
@@ -43,14 +42,18 @@ exports.getProducts = (req, res, next) => {
   // console.log("shop.js", adminData.products); // Note - This is possible to share data within our Node server scope.  Therefore shared across 'all' users.
   // const products = adminData.products; // [ {title: 'a'}, {title: 'b'}]
 
-  const products = Product.fetchAll();
-  res.render("shop", {
-    prods: products, // Inject as an object with a key name that we can refer to in the template.
-    pageTitle: "Shop",
-    path: "/",
-    hasProducts: products.length > 0, // For handlebars that only handles true/false.  Conditional stmts not allowed with handlebars.
-    activeShop: true,
-    productCSS: true
-    // layout: false // Special handlebars 'layout' key to disable default behavior of handlebars to use template.
+  // Product.fetchAll(callback function)
+  // Main idea here is we render the view only after all the fetching
+  // of the products data is done.
+  Product.fetchAll(products => {
+    res.render("shop", {
+      prods: products, // Inject as an object with a key name that we can refer to in the template.
+      pageTitle: "Shop",
+      path: "/",
+      hasProducts: products.length > 0, // For handlebars that only handles true/false.  Conditional stmts not allowed with handlebars.
+      activeShop: true,
+      productCSS: true
+      // layout: false // Special handlebars 'layout' key to disable default behavior of handlebars to use template.
+    });
   });
 };
