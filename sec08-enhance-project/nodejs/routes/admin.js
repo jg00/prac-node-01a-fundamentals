@@ -4,17 +4,20 @@ const express = require("express");
 
 // const rootDir = require("../util/path");
 
-const productsController = require("../controllers/products");
+const adminController = require("../controllers/admin");
 
 const router = express.Router();
 
-// const products = []; // moved to productsController
+// const products = []; // moved to adminController
 
 // GET /admin/add-product
-router.get("/add-product", productsController.getAddProduct);
+router.get("/add-product", adminController.getAddProduct);
+
+// GET /admin/products
+router.get("/products", adminController.getProducts);
 
 // POST /admin/add-product
-router.post("/add-product", productsController.postAddProduct);
+router.post("/add-product", adminController.postAddProduct);
 
 module.exports = router;
 // no longer needed again after controller implemented
