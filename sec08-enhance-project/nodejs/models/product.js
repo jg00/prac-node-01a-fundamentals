@@ -18,8 +18,11 @@ const getProductsFromFile = cb => {
 };
 
 module.exports = class Product {
-  constructor(t) {
-    this.title = t;
+  constructor(title, imageUrl, price, description) {
+    this.title = title;
+    this.imageUrl = imageUrl;
+    this.price = price;
+    this.description = description;
   }
 
   save() {
@@ -32,7 +35,8 @@ module.exports = class Product {
     });
   }
 
-  save_previous_version() {
+  /* save() - previous version
+  save() {
     const p = path.join(
       path.dirname(process.mainModule.filename),
       "data",
@@ -52,6 +56,7 @@ module.exports = class Product {
       });
     });
   }
+  */
 
   static fetchAll(cb) {
     getProductsFromFile(cb);
