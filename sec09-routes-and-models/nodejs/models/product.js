@@ -13,7 +13,11 @@ const getProductsFromFile = cb => {
     if (err) {
       return cb([]);
     }
+
     cb(JSON.parse(fileContent));
+    // console.log("a", fileContent); // <Buffer 5b ... >
+    // console.log("a2", JSON.parse(fileContent)); // [{},{}]
+    // fs.readFile() returns the fileContent
   });
 };
 
@@ -32,7 +36,9 @@ module.exports = class Product {
     getProductsFromFile(products => {
       products.push(this);
       fs.writeFile(p, JSON.stringify(products), err => {
-        console.log(err);
+        if (err) {
+          return console.log(err);
+        }
       });
     });
   }
@@ -62,5 +68,12 @@ module.exports = class Product {
 
   static fetchAll(cb) {
     getProductsFromFile(cb);
+  }
+
+  static findById(id, cb) {
+    getProductsFromFile(products => {
+      const product = products.find(p => p.id === id); // synchronous code
+      cb(product);
+    });
   }
 };
