@@ -1,0 +1,10 @@
+<%- include("./header") %>
+<body>
+  <h1>Display Users</h1>
+  <ul>
+    <% for (let user of users) { %>
+    <li><%=user%></li>
+    <% } %>
+  </ul>
+</body>
+<%- include("./footer") %>
