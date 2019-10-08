@@ -17,6 +17,7 @@
               <%= product.title %>
             </h1>
           </header>
+
           <div class="card__image">
             <img
             <%=/* src="https://cdn.pixabay.com/photo/2016/03/31/20/51/book-1296045_960_720.png" */%>
@@ -24,16 +25,19 @@
               alt="<%= product.title %>"
             />
           </div>
+
           <div class="card__content">
             <h2 class="product__price">$<%= product.price %></h2>
             <p class="product__description"><%= product.description %></p>
           </div>
+
           <div class="card__actions">
-            <a href="/products/<$=product.id%>" class="btn">Details</a>
-            <form action="add-to-cart" method='POST'>
+            <a href="/products/<%=product.id%>" class="btn">Details</a>
+            <form action="/cart" method='POST'>
               <button class="btn" type='submit'>Add to Cart</button>
             </form>
           </div>
+
         </article>
         <% }%>
       </div>
