@@ -1,16 +1,1 @@
-[
-  {
-    "title": "Mastery",
-    "imageUrl": "https://cdn.pixabay.com/photo/2016/03/31/20/51/book-1296045_960_720.png",
-    "description": "first",
-    "price": "1.99",
-    "id": "12345"
-  },
-  {
-    "title": "Mastery2",
-    "imageUrl": "https://cdn.pixabay.com/photo/2016/03/31/20/51/book-1296045_960_720.png",
-    "description": "second",
-    "price": "4",
-    "id": "0.5105669655549325"
-  }
-]
+[{"id":"12345","title":"Mastery ","imageUrl":"https://cdn.pixabay.com/photo/2016/03/31/20/51/book-1296045_960_720.png","description":"first","price":"1.99"},{"id":"0.5105669655549325","title":"Mastery2!!      ","imageUrl":"https://cdn.pixabay.com/photo/2016/03/31/20/51/book-1296045_960_720.png     ","description":"second!!","price":"4"},{"id":"0.17690435302299612","title":"Master3","imageUrl":"https://cdn.pixabay.com/photo/2016/03/31/20/51/book-1296045_960_720.png","description":"third","price":"1.99"}]

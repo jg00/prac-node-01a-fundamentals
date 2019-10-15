@@ -15,7 +15,8 @@ exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
     pageTitle: "Add Product",
     path: "/admin/add-product", // Note property path value is arbitrary and will be used in our template to control UI features
-    editing: false
+    editing: false,
+    product: "" // Fix for when clicking on Add Product
   });
 };
 
@@ -23,7 +24,7 @@ exports.getAddProduct = (req, res, next) => {
 exports.postAddProduct = (req, res, next) => {
   const { title, imageUrl, price, description } = req.body;
 
-  const product = new Product(title, imageUrl, description, price);
+  const product = new Product(null, title, imageUrl, description, price);
   product.save();
   res.redirect("/");
 };
@@ -49,11 +50,33 @@ exports.getEditProduct = (req, res, next) => {
   });
 };
 
-// CONTINUE HERE
+/*
+  1 Fetch information for the product
+  2 Create new product instance and populate with the fetched information
+  3 Call save
+*/
 exports.postEditProduct = (req, res, next) => {
-  console.log("check", req.body);
+  // console.log("check", req.body);
 
-  res.redirect("/");
+  const {
+    productId,
+    title: updatedTitle,
+    imageUrl: updatedImageUrl,
+    description: updatedDescription,
+    price: updatedPrice
+  } = req.body;
+
+  const updatedProduct = new Product(
+    productId,
+    updatedTitle,
+    updatedImageUrl,
+    updatedDescription,
+    updatedPrice
+  );
+
+  updatedProduct.save();
+
+  res.redirect("/admin/products");
 };
 
 // Navigation link "Admin Products"

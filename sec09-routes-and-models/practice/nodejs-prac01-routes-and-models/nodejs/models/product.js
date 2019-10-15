@@ -19,20 +19,38 @@ const getProductsFromFile = function(cb) {
 
 // Product class
 module.exports = class Product {
-  constructor(title, imageUrl, description, price) {
+  constructor(id, title, imageUrl, description, price) {
+    this.id = id;
     this.title = title;
     this.imageUrl = imageUrl;
     this.description = description;
     this.price = price;
   }
 
+  /* Use to add new or update existing product by checking if id already exists
+      1 In both cases we need to get products first so the check for product id need to be inside of our callback after getting products from file
+  */
   save() {
-    this.id = Math.random().toString();
     getProductsFromFile(products => {
-      products.push(this);
-      fs.writeFile(p, JSON.stringify(products), err => {
-        console.log("Save product error:", err);
-      });
+      if (this.id) {
+        const existingProductIndex = products.findIndex(
+          prod => prod.id === this.id
+        );
+        const updatedProducts = [...products];
+        updatedProducts[existingProductIndex] = this;
+
+        // fs.writeFile will always replace the old content
+        fs.writeFile(p, JSON.stringify(updatedProducts), err => {
+          console.log("Update product error:", err);
+        });
+      } else {
+        // If Adding a new product, value of id is null
+        this.id = Math.random().toString();
+        products.push(this);
+        fs.writeFile(p, JSON.stringify(products), err => {
+          console.log("Save product error:", err);
+        });
+      }
     });
   }
 
