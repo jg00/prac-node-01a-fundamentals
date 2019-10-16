@@ -1,6 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
+const Cart = require("./cart");
+
 const p = path.join(
   path.dirname(process.mainModule.filename),
   "data",
@@ -28,7 +30,8 @@ module.exports = class Product {
   }
 
   /* Use to add new or update existing product by checking if id already exists
-      1 In both cases we need to get products first so the check for product id need to be inside of our callback after getting products from file
+      - In both cases we need to get products first so the check for product id need to be inside of our callback after getting products from file
+      - Why save() method? This way we can call save() method on an instantiated object and be able to refer to that object with 'this'.
   */
   save() {
     getProductsFromFile(products => {
@@ -51,6 +54,25 @@ module.exports = class Product {
           console.log("Save product error:", err);
         });
       }
+    });
+  }
+
+  // We don't need to instantiate an object and assign it to a variable just to call these static methods.
+  static deleteById(id) {
+    getProductsFromFile(products => {
+      const product = products.find(prod => prod.id === id);
+
+      const updatedProducts = products.filter(prod => prod.id !== id);
+
+      // fs.writeFile will always replace the old content
+      fs.writeFile(p, JSON.stringify(updatedProducts), err => {
+        // If not error removing from file, we also want to remove from the cart
+        if (!err) {
+          Cart.deleteProduct(id, product.price);
+        } else {
+          console.log("Delete product from file err", err);
+        }
+      });
     });
   }
 

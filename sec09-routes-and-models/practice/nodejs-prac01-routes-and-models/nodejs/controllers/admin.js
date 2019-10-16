@@ -26,7 +26,7 @@ exports.postAddProduct = (req, res, next) => {
 
   const product = new Product(null, title, imageUrl, description, price);
   product.save();
-  res.redirect("/");
+  res.redirect("/"); // This may need to go to "Admin Products" page
 };
 
 // "Edit" button within "Admin Products" page - passed in .productId as params and .edit via query params
@@ -51,6 +51,7 @@ exports.getEditProduct = (req, res, next) => {
 };
 
 /*
+  "Update" button with the "admin/edit-product" page
   1 Fetch information for the product
   2 Create new product instance and populate with the fetched information
   3 Call save
@@ -74,8 +75,7 @@ exports.postEditProduct = (req, res, next) => {
     updatedPrice
   );
 
-  updatedProduct.save();
-
+  updatedProduct.save(); // Important - It is best to have a callback so that we only redirect after saving is done.  Will return to this.
   res.redirect("/admin/products");
 };
 
@@ -88,4 +88,12 @@ exports.getProducts = (req, res, next) => {
       path: "/admin/products"
     });
   });
+};
+
+// "Delete" button within "Admin Products" page
+exports.postDeleteProduct = (req, res, next) => {
+  const prodId = req.body.productId;
+
+  Product.deleteById(prodId); // Important - It is best to have a callback so that we only redirect after deleting the product is done.  Will return to this.
+  res.redirect("/admin/products");
 };

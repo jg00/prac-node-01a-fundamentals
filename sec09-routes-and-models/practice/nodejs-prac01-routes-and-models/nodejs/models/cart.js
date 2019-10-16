@@ -59,4 +59,35 @@ module.exports = class Cart {
       });
     });
   }
+
+  static deleteProduct(id, productPrice) {
+    fs.readFile(p, (err, fileContent) => {
+      // An err means no cart file found so we can simply return
+      if (err) {
+        return;
+      }
+
+      const updatedCart = { ...JSON.parse(fileContent) };
+      const product = updatedCart.products.find(prod => prod.id === id);
+
+      // Need to check if we do have that product in the cart else no need to continue
+      if (!product) {
+        return;
+      }
+
+      const productQty = product.qty;
+      updatedCart.products = updatedCart.products.filter(
+        prod => prod.id !== id
+      );
+      updatedCart.totalPrice =
+        updatedCart.totalPrice - productPrice * productQty; // Keep in mind that if we have the product three times for example, totalPrice shoiuld be reduced by product price * 3 (qty)
+
+      // console.log("Check item removed from the cart", updatedCart);
+
+      // Persist new state of the full cart object
+      fs.writeFile(p, JSON.stringify(updatedCart), err => {
+        console.log("Cart.deleteProduct", err);
+      });
+    });
+  }
 };
