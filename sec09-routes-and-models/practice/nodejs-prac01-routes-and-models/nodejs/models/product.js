@@ -77,7 +77,7 @@ module.exports = class Product {
   }
 
   static fecthAll(cb) {
-    getProductsFromFile(cb);
+    getProductsFromFile(cb); // Returns [{},{},{}] array of products
   }
 
   static findById(id, cb) {

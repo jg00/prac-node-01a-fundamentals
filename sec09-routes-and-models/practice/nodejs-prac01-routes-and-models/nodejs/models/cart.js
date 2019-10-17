@@ -51,7 +51,8 @@ module.exports = class Cart {
       }
 
       // Update cart's totalPrice
-      cart.totalPrice = cart.totalPrice + +productPrice;
+      cart.totalPrice = cart.totalPrice + parseFloat(productPrice, 2);
+      // cart.totalPrice = cart.totalPrice + +productPrice;
 
       // Persist new state of the full cart object
       fs.writeFile(p, JSON.stringify(cart), err => {
@@ -88,6 +89,18 @@ module.exports = class Cart {
       fs.writeFile(p, JSON.stringify(updatedCart), err => {
         console.log("Cart.deleteProduct", err);
       });
+    });
+  }
+
+  static getCart(cb) {
+    fs.readFile(p, (err, fileContent) => {
+      const cart = JSON.parse(fileContent);
+
+      if (err) {
+        cb(null);
+      } else {
+        cb(cart);
+      }
     });
   }
 };

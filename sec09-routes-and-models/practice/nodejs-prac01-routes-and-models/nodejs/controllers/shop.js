@@ -37,7 +37,27 @@ exports.getIndex = (req, res, next) => {
 
 // Navigation link "Cart"
 exports.getCart = (req, res, next) => {
-  res.render("shop/cart", { pageTitle: "Your Cart", path: "/cart" });
+  Cart.getCart(cart => {
+    // Remeber the cart only has the product id's, qty, and cart total.  However we also need produduct detail info.
+    Product.fecthAll(products => {
+      const cartProducts = [];
+      // Now that we have all the products we need to filter for products that are actually in the cart
+      for (product of products) {
+        const cartProductData = cart.products.find(
+          prod => prod.id === product.id
+        );
+        if (cartProductData) {
+          cartProducts.push({ productData: product, qty: cartProductData.qty }); // cartProducts.push(product) - You need the other info as well
+        }
+      }
+
+      res.render("shop/cart", {
+        pageTitle: "Your Cart",
+        path: "/cart",
+        products: cartProducts
+      });
+    });
+  });
 };
 
 // "Add to Cart" button in "Product Detail" page
@@ -49,6 +69,15 @@ exports.postCart = (req, res, next) => {
   });
 
   res.redirect("/cart");
+};
+
+// "Delete" button from "Cart" page
+exports.postCartDeleteProduct = (req, res, next) => {
+  const prodId = req.body.productId;
+  Product.findById(prodId, product => {
+    Cart.deleteProduct(prodId, product.price);
+    res.redirect("/cart");
+  });
 };
 
 // Navigation link "Orders"
