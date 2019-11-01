@@ -1,0 +1,1 @@
+exports.shopController = require("./shopController");
