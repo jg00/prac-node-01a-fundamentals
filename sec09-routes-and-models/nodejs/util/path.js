@@ -1,5 +1,7 @@
+/*
+  From main caller use
+  const rootDir = require("../util/path");
+*/
+
 const path = require("path");
-
-// console.log("rootDir:", path.dirname(process.mainModule.filename));
-
 module.exports = path.dirname(process.mainModule.filename);

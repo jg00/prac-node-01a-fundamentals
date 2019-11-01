@@ -1,37 +1,39 @@
 const fs = require("fs");
 const path = require("path");
 
+const Cart = require("./cart");
+
 const p = path.join(
   path.dirname(process.mainModule.filename),
   "data",
   "products.json"
 );
 
-// Eventually get products and then execute a callback passing to it the products
-const getProductsFromFile = cb => {
+const getProductsFromFile = function(cb) {
   fs.readFile(p, (err, fileContent) => {
     if (err) {
-      return cb([]);
+      cb([]);
+    } else {
+      cb(JSON.parse(fileContent));
     }
-
-    cb(JSON.parse(fileContent));
-    // console.log("a", fileContent); // <Buffer 5b ... >
-    // console.log("a2", JSON.parse(fileContent)); // [{},{}]
-    // fs.readFile() returns the fileContent
   });
 };
 
+// Product class
 module.exports = class Product {
-  constructor(id, title, imageUrl, price, description) {
+  constructor(id, title, imageUrl, description, price) {
     this.id = id;
     this.title = title;
     this.imageUrl = imageUrl;
-    this.price = price;
     this.description = description;
+    this.price = price;
   }
 
+  /* Use to add new or update existing product by checking if id already exists
+      - In both cases we need to get products first so the check for product id need to be inside of our callback after getting products from file
+      - Why save() method? This way we can call save() method on an instantiated object and be able to refer to that object with 'this'.
+  */
   save() {
-    // Eventually get products and then execute a callback passing to it the products
     getProductsFromFile(products => {
       if (this.id) {
         const existingProductIndex = products.findIndex(
@@ -39,65 +41,48 @@ module.exports = class Product {
         );
         const updatedProducts = [...products];
         updatedProducts[existingProductIndex] = this;
+
+        // fs.writeFile will always replace the old content
         fs.writeFile(p, JSON.stringify(updatedProducts), err => {
-          console.log(err);
+          console.log("Update product error:", err);
         });
       } else {
-        this.id = Math.random().toString(); // For new products added assign a new id
+        // If Adding a new product, value of id is null
+        this.id = Math.random().toString();
         products.push(this);
         fs.writeFile(p, JSON.stringify(products), err => {
-          console.log(err);
+          console.log("Save product error:", err);
         });
       }
     });
   }
 
-  /* save() - previous version - before modifying to deal with product updates
-  save() {
-    this.id = Math.random().toString(); // Dummy value
-
-    // Eventually get products and then execute a callback passing to it the products
+  // We don't need to instantiate an object and assign it to a variable just to call these static methods.
+  static deleteById(id) {
     getProductsFromFile(products => {
-      products.push(this);
-      fs.writeFile(p, JSON.stringify(products), err => {
-        if (err) {
-          return console.log(err);
+      const product = products.find(prod => prod.id === id);
+
+      const updatedProducts = products.filter(prod => prod.id !== id);
+
+      // fs.writeFile will always replace the old content
+      fs.writeFile(p, JSON.stringify(updatedProducts), err => {
+        // If not error removing from file, we also want to remove from the cart
+        if (!err) {
+          Cart.deleteProduct(id, product.price);
+        } else {
+          console.log("Delete product from file err", err);
         }
       });
     });
   }
-  */
 
-  /* save() - previous version - before modifying to handling async code correctly with callback
-  save() {
-    const p = path.join(
-      path.dirname(process.mainModule.filename),
-      "data",
-      "products.json"
-    );
-
-    fs.readFile(p, (err, fileContent) => {
-      let products = [];
-
-      if (!err) {
-        products = JSON.parse(fileContent);
-      }
-      products.push(this);
-
-      fs.writeFile(p, JSON.stringify(products), err => {
-        console.log(err);
-      });
-    });
-  }
-  */
-
-  static fetchAll(cb) {
-    getProductsFromFile(cb);
+  static fecthAll(cb) {
+    getProductsFromFile(cb); // Returns [{},{},{}] array of products
   }
 
   static findById(id, cb) {
     getProductsFromFile(products => {
-      const product = products.find(p => p.id === id); // synchronous code
+      const product = products.find(product => product.id === id);
       cb(product);
     });
   }
