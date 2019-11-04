@@ -12,7 +12,14 @@ module.exports = class Product {
     this.price = price;
   }
 
-  save() {}
+  save() {
+    // return the promise to the caller
+    // console.log(this); Product {id:null, title:'test', imageUrl:'..', description:'..', price:'2'}
+    return db.execute(
+      "INSERT INTO products (title, price, imageUrl, description) VALUES (?,?,?,?)",
+      [this.title, this.price, this.imageUrl, this.description]
+    );
+  }
 
   static deleteById(id) {}
 

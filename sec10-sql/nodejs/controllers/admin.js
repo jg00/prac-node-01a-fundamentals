@@ -25,8 +25,13 @@ exports.postAddProduct = (req, res, next) => {
   const { title, imageUrl, price, description } = req.body;
 
   const product = new Product(null, title, imageUrl, description, price);
-  product.save();
-  res.redirect("/"); // This may need to go to "Admin Products" page
+  product
+    .save()
+    .then(result => {
+      // Don't really need the result but we want to redirect once the insert is successful
+      res.redirect("/"); // This may need to go to "Admin Products" page
+    })
+    .catch(err => console.log(Error));
 };
 
 // "Edit" button within "Admin Products" page - passed in .productId as params and .edit via query params
