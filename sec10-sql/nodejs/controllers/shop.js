@@ -29,6 +29,19 @@ exports.getProducts = (req, res, next) => {
 // "Details" button in "Products" page
 exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId;
+
+  Product.findById(prodId)
+    .then(([product]) => {
+      // console.log(product[0]); // {id:2, title:'', price:9.99, description:'', imageUrl:''}
+      res.render("shop/product-detail", {
+        product: product[0],
+        pageTitle: product.title,
+        path: "/products"
+      });
+    })
+    .catch(err => console.log(err));
+
+  /*
   Product.findById(prodId, product => {
     res.render("shop/product-detail", {
       product: product,
@@ -36,6 +49,7 @@ exports.getProduct = (req, res, next) => {
       path: "/products"
     });
   });
+  */
 };
 
 // Navigation link "Shop"

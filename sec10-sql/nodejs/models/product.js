@@ -25,8 +25,10 @@ module.exports = class Product {
 
   static fetchAll() {
     /* Why return the promise? We are interested in catching the returned data from the place we are calling the fetchAll(). */
-    return db.execute(`SELECT * FROM products`);
+    return db.execute("SELECT * FROM products");
   }
 
-  static findById(id) {}
+  static findById(id) {
+    return db.execute("SELECT * FROM products WHERE id=?", [id]);
+  }
 };
