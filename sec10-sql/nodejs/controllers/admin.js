@@ -81,7 +81,22 @@ exports.postEditProduct = (req, res, next) => {
 
 // Navigation link "Admin Products"
 exports.getProducts = (req, res, next) => {
-  Product.fecthAll(products => {
+  /* I jumped ahead - will return to this and use original version below for now
+  Product.fetchAll()
+    .then(([rows, fieldData]) => {
+      res.render("admin/products", {
+        prods: rows,
+        pageTitle: "Admin Products",
+        path: "/admin/products"
+      });
+    })
+    .catch(err => {
+      console.log(err);
+    });
+  */
+
+  // Ref only for file data source
+  Product.fetchAll(products => {
     res.render("admin/products", {
       prods: products,
       pageTitle: "Admin Products",

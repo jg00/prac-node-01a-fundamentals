@@ -4,6 +4,7 @@ const express = require("express");
 const app = express();
 
 const errorController = require("./controllers/error");
+const db = require("./util/database");
 
 app.set("view engine", "ejs");
 app.set("views", "views");
@@ -25,3 +26,14 @@ app.use("/favicon.ico", (req, res, next) => {
 app.use(errorController.get404);
 
 app.listen(3000);
+
+/*
+Reference database connection test only
+  db.execute("SELECT * FROM products")
+    .then(result => {
+      console.log(result[0], result[1]);
+    })
+    .catch(err => {
+      console.log(err);
+    });
+*/
