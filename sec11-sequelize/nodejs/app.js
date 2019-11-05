@@ -4,7 +4,8 @@ const express = require("express");
 const app = express();
 
 const errorController = require("./controllers/error");
-const db = require("./util/database");
+
+const sequelize = require("./util/database");
 
 app.set("view engine", "ejs");
 app.set("views", "views");
@@ -25,7 +26,20 @@ app.use("/favicon.ico", (req, res, next) => {
 
 app.use(errorController.get404);
 
-app.listen(3000);
+/* 
+  sync() function 
+  - is aware of all our models
+  - creates any tables that do not exists (sequelize creates the sql query for these in the backgrund)
+      CREATE TABLE IF NOT EXISTS `products` (id....)
+  - table names are pluralized ex: 'product' becomes 'products'
+*/
+sequelize
+  .sync()
+  .then(result => {
+    // console.log(result);
+    app.listen(3000); // Only start server if we make the database connection using sequelize
+  })
+  .catch(err => console.log(err));
 
 /*
 Reference database connection test only

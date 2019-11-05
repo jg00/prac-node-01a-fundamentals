@@ -1,34 +1,29 @@
-const db = require("../util/database"); // This is our pool object from our database.js file
+const Sequelize = require("sequelize"); // Sequelize uppercase 'S' b/c the constructor function is returned
+const DataTypes = require("sequelize/lib/data-types"); // convenience class
+const sequelize = require("../util/database"); // sequelize lowercase 's' b/c this is the database connection pool managed by sequelize
 
-const Cart = require("./cart");
-
-// Product class
-module.exports = class Product {
-  constructor(id, title, imageUrl, description, price) {
-    this.id = id;
-    this.title = title;
-    this.imageUrl = imageUrl;
-    this.description = description;
-    this.price = price;
+// Define a model - https://sequelize.org/master/class/lib/sequelize.js~Sequelize.html#instance-method-define
+// Keep table name 'product' singulare and seqeulize will 'pluralize' as 'products when sequelize.sync() is executed in app.js
+const Product = sequelize.define("product", {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    allowNull: false,
+    primaryKey: true
+  },
+  title: DataTypes.STRING,
+  price: {
+    type: DataTypes.DOUBLE,
+    allowNull: false
+  },
+  imageUrl: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  description: {
+    type: DataTypes.STRING,
+    allowNull: false
   }
+});
 
-  save() {
-    // return the promise to the caller
-    // console.log(this); Product {id:null, title:'test', imageUrl:'..', description:'..', price:'2'}
-    return db.execute(
-      "INSERT INTO products (title, price, imageUrl, description) VALUES (?,?,?,?)",
-      [this.title, this.price, this.imageUrl, this.description]
-    );
-  }
-
-  static deleteById(id) {}
-
-  static fetchAll() {
-    /* Why return the promise? We are interested in catching the returned data from the place we are calling the fetchAll(). */
-    return db.execute("SELECT * FROM products");
-  }
-
-  static findById(id) {
-    return db.execute("SELECT * FROM products WHERE id=?", [id]);
-  }
-};
+module.exports = Product;
