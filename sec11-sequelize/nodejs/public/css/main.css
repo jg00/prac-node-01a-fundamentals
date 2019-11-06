@@ -23,6 +23,16 @@ form {
   text-align: center;
 }
 
+/* For div tag surrounding img tag */
+.image {
+  height: 20rem;
+}
+
+/* img tag will be 100% of the .image class */
+.image img {
+  height: 100%;
+}
+
 .main-header {
   width: 100%;
   height: 3.5rem;
