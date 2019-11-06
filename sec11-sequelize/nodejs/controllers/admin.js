@@ -33,7 +33,7 @@ exports.postAddProduct = (req, res, next) => {
   })
     .then(result => {
       console.log("Created Product");
-      // res.redirect("/products"); // This may need to go to "Admin Products" page
+      res.redirect("/admin/products"); // This may need to go to "Admin Products" page
     })
     .catch(err => console.log(err));
 };
@@ -204,6 +204,29 @@ exports.getProducts = (req, res, next) => {
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
 
-  Product.deleteById(prodId); // Important - It is best to have a callback so that we only redirect after deleting the product is done.  Will return to this.
-  res.redirect("/admin/products");
+  // Sequelize - 1st approach - Find product and then use the "instance" .destroy() method
+  Product.findByPk(prodId) // 1st promise
+    .then(product => {
+      return product.destroy(); // 2nd promise. Again better to return the promise and handle in the .then() thereafter
+    })
+    .then(result => {
+      console.log("DESTROYED PRODUCT");
+      res.redirect("/admin/products");
+    })
+    .catch(err => console.log(err)); // Catches any errors for 1st or 2nd promise returned
+
+  /* 
+    // Sequelize - 2nd approach - Using Model class .destroy() method
+    Product.destroy({where:{ id: prodId}})
+      .then(result => {
+        console.log("PRODUCT DELETED!");
+        res.redirect("/admin/products");
+      })
+      .catch(err => console.log(err));
+  */
+
+  /* File data source
+    Product.deleteById(prodId); // Important - It is best to have a callback so that we only redirect after deleting the product is done.  Will return to this.
+    res.redirect("/admin/products");
+   */
 };
