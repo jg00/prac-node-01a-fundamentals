@@ -5,6 +5,7 @@ const sequelize = require("../util/database"); // sequelize lowercase 's' b/c th
 // Define a model - https://sequelize.org/master/class/lib/sequelize.js~Sequelize.html#instance-method-define
 // Keep table name 'product' singulare and seqeulize will 'pluralize' as 'products when sequelize.sync() is executed in app.js
 // With sequelize we don't define a model using class Product. Instead we use .define() method.
+// .define() returns a typeof Model
 const Product = sequelize.define("product", {
   id: {
     type: Sequelize.INTEGER,
