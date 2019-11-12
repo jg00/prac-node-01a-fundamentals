@@ -27,15 +27,18 @@ app.use(express.static(path.join(__dirname, "public")));
   Idea here is to get a the user we can use throughout our application.     
   app.use() only registers middleware.
   For every incoming request this will execute and reach out to our User table
+
+  For now user with id = 1 always exists because it was created during the sequelize.sync() step.
 */
-app.use((res, req, next) => {
+app.use((req, res, next) => {
   User.findByPk(1)
     .then(user => {
-      // Remember what is returned above is a sequelize object we reference as user.
+      // Remember what is returned above is a sequelize object we reference as user and not just a simple object.
       // So in the future when we call this user, we can execute sequelize methods like .destroy(), etc.
-      // We want to store our user by simply adding to our request object. (Just make sure we don't overwrite an existing one
-      // like req.body)
+      // We want to store our user by simply adding to our request object. (Just make sure we
+      // don't overwrite an existing property like  our req.body)
       req.user = user;
+      // console.log("HERE", req.user.id);
       next();
     })
     .catch(err => {
@@ -88,7 +91,7 @@ sequelize
     if (!user) {
       return User.create({ name: "Sam", email: "sam@test.com" }); // Returns a promise
     }
-    return Promise.resolve(user); // We want to be consistent to return a promise.  Technically you can remove Promise.resolve() because it automatically returns a promise in a .then block
+    return Promise.resolve(user); // We want to be consistent to return a promise.  Technically you can remove Promise.resolve() because it automatically returns a promise when you return from a then block
   })
   .then(user => {
     // console.log(user);
