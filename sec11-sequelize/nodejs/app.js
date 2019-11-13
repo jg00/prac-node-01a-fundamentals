@@ -13,6 +13,8 @@ const sequelize = require("./util/database");
 */
 const Product = require("./models/product");
 const User = require("./models/user");
+const Cart = require("./models/cart");
+const CartItem = require("./models/cart-item");
 
 app.set("view engine", "ejs");
 app.set("views", "views");
@@ -63,13 +65,37 @@ app.use(errorController.get404);
 */
 
 /* 
+  Model relation 1 
   Relation in the sense of a user created the product. 
-  Product <-- Has many -- User 
+  User hasMany Product (1:m) - remember .hasMany() can be used to create an association that is either 1:m or n:m.
+  Product belongsTo User (1:1)
 */
-Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" });
-User.hasMany(Product); // Optional but you can also define the inverse and/or both
+Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" }); // Product.userId (FK) added
+User.hasMany(Product); // Optional but you can also define the inverse and/or both.  Product.userId (FK) added.  user instance gets .createProduct(), .getProducts()
+
+/*
+  Model relation 2
+  Cart belongsTo User (1:1)
+  Either appoach will add instance methods to the Cart.
+    
+*/
+User.hasOne(Cart); // Cart.userId (FK) added.  User instance gets .getCart()
+Cart.belongsTo(User); // Cart.userId (FK) added; inverse relation.
+
+/*
+  Model relation 3
+  Cart belongsToMany Product (m:m) - many to many relation because
+    - a Cart can have multiple products
+    - and a single Product can be part of many different Carts
+  
+  This only works with an intermediate Model (ie CartItem Model) that connects them.
+    - {through:CartItem} tells sequelize where these connections should be stored.  By default the connections are stored in ProductCart (source + target) 
+*/
+Cart.belongsToMany(Product, { through: CartItem }); // CartItems.productId (FK) added.
+Product.belongsToMany(Cart, { through: CartItem }); // CartItems.cartId (FK) added.
 
 /* 
+  Sequelize sync - create/update database tables
   sync() function 
   - is aware of all our models
   - creates any tables that do not exists (sequelize creates the sql query for these in the backgrund)
@@ -79,8 +105,8 @@ User.hasMany(Product); // Optional but you can also define the inverse and/or bo
   - Side note - npm start is what runs sequelize code below.
 */
 sequelize
-  // .sync({ force: true }) // Not something you should use in Production
-  .sync()
+  .sync({ force: true }) // Not something you should use in Production
+  // .sync()
   .then(result => {
     // console.log(result);
 
