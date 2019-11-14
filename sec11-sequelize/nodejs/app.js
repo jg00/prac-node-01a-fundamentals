@@ -65,7 +65,7 @@ app.use(errorController.get404);
 */
 
 /* 
-  Model relation 1 
+  Model relation 1 - User/Product
   Relation in the sense of a user created the product. 
   User hasMany Product (1:m) - remember .hasMany() can be used to create an association that is either 1:m or n:m.
   Product belongsTo User (1:1)
@@ -74,7 +74,7 @@ Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" }); // Product.
 User.hasMany(Product); // Optional but you can also define the inverse and/or both.  Product.userId (FK) added.  user instance gets .createProduct(), .getProducts()
 
 /*
-  Model relation 2
+  Model relation 2: Cart/User
   Cart belongsTo User (1:1)
   Either appoach will add instance methods to the Cart.
     
@@ -83,7 +83,7 @@ User.hasOne(Cart); // Cart.userId (FK) added.  User instance gets .getCart()
 Cart.belongsTo(User); // Cart.userId (FK) added; inverse relation.
 
 /*
-  Model relation 3
+  Model relation 3: Cart -> CartItem <- Product
   Cart belongsToMany Product (m:m) - many to many relation because
     - a Cart can have multiple products
     - and a single Product can be part of many different Carts
@@ -105,8 +105,8 @@ Product.belongsToMany(Cart, { through: CartItem }); // CartItems.cartId (FK) add
   - Side note - npm start is what runs sequelize code below.
 */
 sequelize
-  .sync({ force: true }) // Not something you should use in Production
-  // .sync()
+  // .sync({ force: true }) // Not something you should use in Production
+  .sync()
   .then(result => {
     // console.log(result);
 
@@ -120,7 +120,11 @@ sequelize
     return Promise.resolve(user); // We want to be consistent to return a promise.  Technically you can remove Promise.resolve() because it automatically returns a promise when you return from a then block
   })
   .then(user => {
-    // console.log(user);
+    // User/Cart (1:1) associations
+    // Note this is creating a new record in Carts table everytime the server is restarted.
+    return user.createCart(); // (important - In the beginning a user cart will not hold any special data.  When we load the Cart page, then we load the products associated to that cart.
+  })
+  .then(cart => {
     app.listen(3000); // Only start server if we make the database connection using sequelize
   })
   .catch(err => console.log(err));

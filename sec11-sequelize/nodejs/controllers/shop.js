@@ -141,41 +141,154 @@ exports.getIndex = (req, res, next) => {
   */
 };
 
+// After User/Cart associated via Sequelize - Now we want to get the cart assoiated to our existing user and get all products in the cart
 // Navigation link "Cart"
 exports.getCart = (req, res, next) => {
-  Cart.getCart(cart => {
-    // Remeber the cart only has the product id's, qty, and cart total.  However we also need produduct detail info.
-    Product.fetchAll(products => {
-      const cartProducts = [];
-      // Now that we have all the products we need to filter for products that are actually in the cart
-      for (product of products) {
-        const cartProductData = cart.products.find(
-          prod => prod.id === product.id
-        );
-        if (cartProductData) {
-          cartProducts.push({ productData: product, qty: cartProductData.qty }); // cartProducts.push(product) - You need the other info as well
-        }
-      }
+  // console.log("HERE", req.user.cart); // 'undefined' because we never added cart property to our req object.  We can still get cart through our req.user.getCart() Sequelize instance method below.
+  // -> Key here with req.user.getCart() is "we are loading the cart associated to a user from the database"
+  req.user
+    .getCart() // Sequelize instance method
+    .then(cart => {
+      console.log(cart); // null - originally because we did not have a cart associated to the demo user
 
-      res.render("shop/cart", {
-        pageTitle: "Your Cart",
-        path: "/cart",
-        products: cartProducts
+      // Now with the cart available, we can fetch the products available inside of it.
+      return cart
+        .getProducts()
+        .then(products => {
+          console.log("HERE", products);
+          res.render("shop/cart", {
+            path: "/cart",
+            pageTitle: "Your Cart",
+            products: products // This was previously productData:product.  This means we have to change how it is referenced in the cart.ejs view.
+            // Also note we can now access products.cartItem.quantity in our view. (cartItem is the 'joining table' we defined to join n:m - cart:product)
+          });
+        })
+        .catch(err => console.log(err));
+    })
+    .catch(err => console.log);
+
+  // Cart.getCart(cart => {
+  //   // Remeber the cart only has the product id's, qty, and cart total.  However we also need produduct detail info.
+  //   Product.fetchAll(products => {
+  //     const cartProducts = [];
+  //     // Now that we have all the products we need to filter for products that are actually in the cart
+  //     for (product of products) {
+  //       const cartProductData = cart.products.find(
+  //         prod => prod.id === product.id
+  //       );
+  //       if (cartProductData) {
+  //         cartProducts.push({ productData: product, qty: cartProductData.qty }); // cartProducts.push(product) - You need the other info as well
+  //       }
+  //     }
+
+  //     res.render("shop/cart", {
+  //       pageTitle: "Your Cart",
+  //       path: "/cart",
+  //       products: cartProducts
+  //     });
+  //   });
+  // });
+};
+
+/*
+  // Before User/Cart associated via Sequelize
+  // Navigation link "Cart"
+  exports.getCart = (req, res, next) => {
+    Cart.getCart(cart => {
+      // Remeber the cart only has the product id's, qty, and cart total.  However we also need produduct detail info.
+      Product.fetchAll(products => {
+        const cartProducts = [];
+        // Now that we have all the products we need to filter for products that are actually in the cart
+        for (product of products) {
+          const cartProductData = cart.products.find(
+            prod => prod.id === product.id
+          );
+          if (cartProductData) {
+            cartProducts.push({ productData: product, qty: cartProductData.qty }); // cartProducts.push(product) - You need the other info as well
+          }
+        }
+
+        res.render("shop/cart", {
+          pageTitle: "Your Cart",
+          path: "/cart",
+          products: cartProducts
+        });
       });
     });
-  });
-};
+  };
+*/
 
-// "Add to Cart" button in "Product Detail" page
+/*
+  // After - Cart/Product association using Sequelize
+  // "Add to Cart" button in "Product Detail" page
+
+  1 Get user's cart (placed in fetchedCart variable to make available in the overall function)
+  2 Find if product already exists in the cart
+      a if it does then just update the quantity
+      b if it does not then add the product
+  3 With the product id given we need to get the product details to get the price
+ 
+*/
 exports.postCart = (req, res, next) => {
   const prodId = req.body.productId;
+  let fetchedCart;
 
-  Product.findById(prodId, product => {
-    Cart.addProduct(prodId, product.price);
-  });
+  req.user
+    .getCart()
+    .then(cart => {
+      // Remember cart is only available in this anonymous function so that is why we create a fetchedCart variable outside to make cart available below.
+      fetchedCart = cart;
+      return cart.getProducts({ where: { id: prodId } }); // still returns an [] of products eventhough we only ask for a specfic product
+    })
+    .then(products => {
+      let product;
 
-  res.redirect("/cart");
+      // (1) If product already in cart
+      if (products.length > 0) {
+        product = products[0];
+      }
+      let newQuantity = 1;
+      if (product) {
+        // .. If we do have a product, we need to get the product details and then change the quantity
+        // Leave for now
+      }
+
+      // (2) If we don't have a product yet, we know this product is not part of the cart yet.
+      // To add a product, we get a product object first and add that product to the cart.
+      // In addition we set some other fields in the 'join table'.
+      return Product.findByPk(prodId)
+        .then(product => {
+          // return cart.addProduct(product) // Important - Cannot access cart directly like this.  Create the cart variable above when we retreive it.
+          return fetchedCart.addProduct(product, {
+            through: { quantity: newQuantity }
+          }); // Important - remember to add our extra field in our 'join table' cart-list
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    })
+
+    .then(() => {
+      res.redirect("/cart");
+    })
+
+    .catch(err => {
+      console.log(err);
+    });
 };
+
+/* Before - Cart/Product association using Sequelize
+  // "Add to Cart" button in "Product Detail" page
+  exports.postCart = (req, res, next) => {
+    const prodId = req.body.productId;
+
+    Product.findById(prodId, product => {
+      Cart.addProduct(prodId, product.price);
+    });
+
+    res.redirect("/cart");
+  };
+*/
 
 // "Delete" button from "Cart" page
 exports.postCartDeleteProduct = (req, res, next) => {
