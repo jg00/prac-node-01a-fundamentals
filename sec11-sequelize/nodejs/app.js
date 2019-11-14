@@ -118,10 +118,12 @@ sequelize
       return User.create({ name: "Sam", email: "sam@test.com" }); // Returns a promise
     }
     return Promise.resolve(user); // We want to be consistent to return a promise.  Technically you can remove Promise.resolve() because it automatically returns a promise when you return from a then block
+    // return user // returning a value in a .then block it is automatically wrapped in a promise and therefore we can chain a .then() thereafter
   })
   .then(user => {
     // User/Cart (1:1) associations
     // Note this is creating a new record in Carts table everytime the server is restarted.
+    // A cart just needs to be there when the site is loaded.
     return user.createCart(); // (important - In the beginning a user cart will not hold any special data.  When we load the Cart page, then we load the products associated to that cart.
   })
   .then(cart => {

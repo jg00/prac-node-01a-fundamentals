@@ -149,13 +149,13 @@ exports.getCart = (req, res, next) => {
   req.user
     .getCart() // Sequelize instance method
     .then(cart => {
-      console.log(cart); // null - originally because we did not have a cart associated to the demo user
+      // console.log("HERE", cart); // null - originally because we did not have a cart associated to the demo user
 
       // Now with the cart available, we can fetch the products available inside of it.
       return cart
         .getProducts()
         .then(products => {
-          console.log("HERE", products);
+          // console.log("HERE", products);
           res.render("shop/cart", {
             path: "/cart",
             pageTitle: "Your Cart",
@@ -226,12 +226,12 @@ exports.getCart = (req, res, next) => {
   2 Find if product already exists in the cart
       a if it does then just update the quantity
       b if it does not then add the product
-  3 With the product id given we need to get the product details to get the price
  
 */
 exports.postCart = (req, res, next) => {
   const prodId = req.body.productId;
   let fetchedCart;
+  let newQuantity = 1; // initialized for products that do not exists yet
 
   req.user
     .getCart()
@@ -241,31 +241,40 @@ exports.postCart = (req, res, next) => {
       return cart.getProducts({ where: { id: prodId } }); // still returns an [] of products eventhough we only ask for a specfic product
     })
     .then(products => {
-      let product;
+      let product; // undefined if specific product was not found in the cart
 
-      // (1) If product already in cart
+      // (1) If product already in cart, we need are only using it to get the product quantity in this .then() block
       if (products.length > 0) {
         product = products[0];
       }
-      let newQuantity = 1;
+
+      // If there product exists (ie product is not undefined)
+      // -> Here we are only using the existing product to get the old quantity to set the new quantity.  We still return the existing product.
       if (product) {
-        // .. If we do have a product, we need to get the product details and then change the quantity
-        // Leave for now
+        // At this point this is the product we found in our cart (ie exists in the cart)
+        // console.log("PROD EXISTS IN CART", product.cartItem); // Because of our n:m relation between Cart/Product we can access the 'joining table' we called cartItem
+        const oldQuantity = product.cartItem.quantity;
+        newQuantity = oldQuantity + 1;
+        // return product; // Return existing product but at this point the newQuantity has been set accordinly
+        return Promise.resolve(product); // Same as return product
       }
 
       // (2) If we don't have a product yet, we know this product is not part of the cart yet.
-      // To add a product, we get a product object first and add that product to the cart.
+      // To add a product, we get the product object first and add that product to the cart.
       // In addition we set some other fields in the 'join table'.
-      return Product.findByPk(prodId)
-        .then(product => {
-          // return cart.addProduct(product) // Important - Cannot access cart directly like this.  Create the cart variable above when we retreive it.
-          return fetchedCart.addProduct(product, {
-            through: { quantity: newQuantity }
-          }); // Important - remember to add our extra field in our 'join table' cart-list
-        })
-        .catch(err => {
-          console.log(err);
-        });
+      return Product.findByPk(prodId);
+    })
+
+    // We either get a new product to add or existing product to add.
+    // .addProduct() is how we would both 'add' and 'edit' a product and change the quantity accordingly.
+    // This is how you would also 'edit' quantity in the 'joining table'
+    // -> If it is a new product it INSERTS, if product exists, it updates
+    // INSERT INTO `cartItems` (`id`,`quantity`,`createdAt`,`updatedAt`,`cartId`,`productId`) VALUES (NULL,1,'2019-11-14 21:44:10','2019-11-14 21:44:10',1,4);
+    // UPDATE `cartItems` SET `quantity`=?,`updatedAt`=? WHERE `cartId` = ? AND `productId` = ?
+    .then(product => {
+      return fetchedCart.addProduct(product, {
+        through: { quantity: newQuantity }
+      });
     })
 
     .then(() => {
