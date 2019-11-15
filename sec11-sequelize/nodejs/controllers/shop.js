@@ -305,14 +305,53 @@ exports.postCart = (req, res, next) => {
   };
 */
 
+/*
+      1 get user cart
+      2 get products in the cart
+      3 destroy the product in the cart
+  */
+// After User/Cart associated via Sequelize
 // "Delete" button from "Cart" page
 exports.postCartDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
-  Product.findById(prodId, product => {
-    Cart.deleteProduct(prodId, product.price);
-    res.redirect("/cart");
-  });
+  // let fetchedCart; // Use if using .removeProduct approach below
+
+  req.user
+    .getCart()
+    .then(cart => {
+      fetchedCart = cart;
+      return cart.getProducts({ where: { id: prodId } });
+    })
+    .then(products => {
+      const product = products[0];
+      return product.cartItem.destroy();
+
+      // Another approach works as well
+      // return fetchedCart.removeProduct(product);
+
+      // console.log("HERE", product);
+      // console.log("PRODUCT QUANTITY", product.cartItem.quantity);
+    })
+    .then(result => {
+      // console.log("Item removed from the cart!");
+      res.redirect("/cart");
+    })
+    .catch(err => {
+      console.log(err);
+    });
 };
+
+/* 
+  // Before User/Cart associated via Sequelize
+  // "Delete" button from "Cart" page
+  exports.postCartDeleteProduct = (req, res, next) => {
+    const prodId = req.body.productId;
+    Product.findById(prodId, product => {
+      Cart.deleteProduct(prodId, product.price);
+      res.redirect("/cart");
+    });
+  };
+ */
 
 // Navigation link "Orders"
 exports.getOrders = (req, res, next) => {
