@@ -15,6 +15,8 @@ const Product = require("./models/product");
 const User = require("./models/user");
 const Cart = require("./models/cart");
 const CartItem = require("./models/cart-item");
+const Order = require("./models/order");
+const OrderItem = require("./models/order-item");
 
 app.set("view engine", "ejs");
 app.set("views", "views");
@@ -94,6 +96,18 @@ Cart.belongsTo(User); // Cart.userId (FK) added; inverse relation.
 Cart.belongsToMany(Product, { through: CartItem }); // CartItems.productId (FK) added.
 Product.belongsToMany(Cart, { through: CartItem }); // CartItems.cartId (FK) added.
 
+/*
+  Model relation 4: User/Order 
+*/
+Order.belongsTo(User); // getUser, setUser, crateUser
+User.hasMany(Order); // getOrders, addOrder, addOrders, createOrder
+
+/*
+  Model relation 5: Order/Product 
+*/
+Order.belongsToMany(Product, { through: OrderItem }); // getProducts, createProduct
+// Product.belongsToMany(Order, {through: OrderItem}) // You can define inverse but not need here.
+
 /* 
   Sequelize sync - create/update database tables
   sync() function 
@@ -111,8 +125,10 @@ sequelize
     // console.log(result);
 
     // Check methods
-    console.log("MAGIC", Object.keys(Cart.prototype)); // cart.addProducts, cart.getProducts, etc
-    console.log("MAGIC", Object.keys(Product.prototype)); // product.addCarts, product.getCarts, etc
+    // console.log("MAGIC", Object.keys(Cart.prototype)); // cart.addProducts, cart.getProducts, etc
+    // console.log("MAGIC", Object.keys(Product.prototype)); // product.addCarts, product.getCarts, etc
+    console.log("MAGIC", Object.keys(Order.prototype)); // product.addCarts, product.getCarts, etc
+    console.log("MAGIC", Object.keys(User.prototype)); // product.addCarts, product.getCarts, etc
 
     // For now create a dummy user if not found
     return User.findByPk(1);
