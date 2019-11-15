@@ -246,6 +246,12 @@ exports.postCart = (req, res, next) => {
       // (1) If product already in cart, we need are only using it to get the product quantity in this .then() block
       if (products.length > 0) {
         product = products[0];
+
+        /* Side test only to see product instance methods and utilize them
+          console.log("PRODUCT", Object.keys(Product.prototype));
+          product.getCarts().then(carts => console.log(carts));
+          product.getUser().then(user => console.log(user));
+        */
       }
 
       // If there product exists (ie product is not undefined)
@@ -266,7 +272,7 @@ exports.postCart = (req, res, next) => {
     })
 
     // We either get a new product to add or existing product to add.
-    // .addProduct() is how we would both 'add' and 'edit' a product and change the quantity accordingly.
+    // .addProduct() is how we would both 'add' (if does not exists) and 'edit' (if exists) a product and change the quantity accordingly.
     // This is how you would also 'edit' quantity in the 'joining table'
     // -> If it is a new product it INSERTS, if product exists, it updates
     // INSERT INTO `cartItems` (`id`,`quantity`,`createdAt`,`updatedAt`,`cartId`,`productId`) VALUES (NULL,1,'2019-11-14 21:44:10','2019-11-14 21:44:10',1,4);

@@ -110,6 +110,10 @@ sequelize
   .then(result => {
     // console.log(result);
 
+    // Check methods
+    console.log("MAGIC", Object.keys(Cart.prototype)); // cart.addProducts, cart.getProducts, etc
+    console.log("MAGIC", Object.keys(Product.prototype)); // product.addCarts, product.getCarts, etc
+
     // For now create a dummy user if not found
     return User.findByPk(1);
   })
