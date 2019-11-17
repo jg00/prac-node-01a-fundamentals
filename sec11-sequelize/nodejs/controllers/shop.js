@@ -437,8 +437,25 @@ product {
 */
 
 // Navigation link "Orders"
+// -> LEFT OUTER JOIN. 'Eager loading' example.
 exports.getOrders = (req, res, next) => {
-  res.render("shop/orders", { pageTitle: "Your Orders", path: "/orders" });
+  req.user
+    .getOrders({ include: ["products"] }) // -> With Order.belongsToMany(Product, {though: OrderItem}) we also 'include all' products [] array for each order.
+    .then(orders => {
+      /* Note this is returning [] of orders associated to user.  
+         In the view, orders.ejs, we loop though the orders array and for each order we 
+         have access to the 'joining table' using order.orderItem.
+      */
+      // console.log(orders); // products: [ [product], [product] ] } ] now added to each order with .getOrders({include: ["products"]})
+
+      res.render("shop/orders", {
+        pageTitle: "Your Orders",
+        path: "/orders",
+        orders: orders
+      });
+    })
+
+    .catch(err => console.log(err));
 };
 
 // "Checkout" button within "Cart" page

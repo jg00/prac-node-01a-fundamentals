@@ -106,7 +106,7 @@ User.hasMany(Order); // getOrders, addOrder, addOrders, createOrder
   Model relation 5: Order/Product 
 */
 Order.belongsToMany(Product, { through: OrderItem }); // getProducts, createProduct
-// Product.belongsToMany(Order, {through: OrderItem}) // You can define inverse but not need here.
+// Product.belongsToMany(Order, { through: OrderItem }); // You can define inverse but not need here.
 
 /* 
   Sequelize sync - create/update database tables
