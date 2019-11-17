@@ -353,6 +353,89 @@ exports.postCartDeleteProduct = (req, res, next) => {
   };
  */
 
+/*
+  Post orders:
+  1 get user cart
+  2 get user cart items
+  3 create an order for the user
+  4 -> Add products to the order (for each product we need to 'correctly' add to the orderItem 'joining' table the quantity value)
+*/
+exports.postOrders = (req, res, next) => {
+  let fetchedCart;
+
+  req.user
+    .getCart()
+    .then(cart => {
+      fetchedCart = cart;
+      return cart.getProducts();
+    })
+    .then(products => {
+      // console.log(products); // Product and the cartItem returned
+
+      // Create a user order an copy cart items to the order
+      req.user
+        .createOrder() // note creates an instance every time
+        .then(order => {
+          // console.log("ORDER STARTED", order);
+          // console.log("ORDER ITEMS", order.orderItem); // At this point we order.orderItem is "undefined" be we want to add rows to it with quantity values for each product.
+          /*
+            -> Here we are not adding a single product.  We are adding multiple products. So we have to set the 'quantity' correctly.
+            order.addProducts(products, {through: {quantity: {'set correctly for each product'}})
+            order.addProducts(products); // Side note, this will add entries into orderItems table but orderItems.quantity will be 'null'.
+          */
+
+          /* Check only - For each product we will set a property 'orderItem' that corresponds to our 'joining table' model
+            products.forEach(product => {
+              product.orderItem = { quantity: product.cartItem.quantity };
+              console.log(product);
+            });
+          */
+
+          /*
+            -> Each product needs to have a special field which is then understood
+            by Sequelize. To assign that special field we add product.orderItem
+            which Sequelize will look for due to our order/product Sequelize association we
+            created.
+            -> Set product.orderItem "stores JavaScript object" where you configure
+            the value for this 'joining table'.  
+          */
+          const updatedProducts = products.map(product => {
+            product.orderItem = { quantity: product.cartItem.quantity }; // Configure the value for the 'joining table' that Sequelize will look for.
+            return product;
+          });
+
+          return order.addProducts(updatedProducts);
+        })
+        .then(result => {
+          // After adding products to the order is successful we want to clear the cart
+          return fetchedCart.setProducts(null); // Removes all products related to the cart in the cartItems table.
+        })
+        .then(result => {
+          res.redirect("/orders");
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    })
+    .catch(err => console.log(err));
+};
+
+/*
+
+product {
+    dataValues:
+     { id: 1,
+       title: 'Test Product 1',
+       price: 1.99,
+       imageUrl:
+        'https://cdn.pixabay.com/photo/2016/03/31/20/51/book-1296045_960_720.png',
+       description: 'prod desc 1',
+       createdAt: 2019-11-16T02:25:22.000Z,
+       updatedAt: 2019-11-16T02:25:22.000Z,
+       userId: 1,
+       cartItem: [cartItem] }  <- cartItem 
+*/
+
 // Navigation link "Orders"
 exports.getOrders = (req, res, next) => {
   res.render("shop/orders", { pageTitle: "Your Orders", path: "/orders" });
