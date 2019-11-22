@@ -1,3 +1,4 @@
+const mongodb = require("mongodb");
 const getDb = require("../util/database").getDb;
 
 class Product {
@@ -21,14 +22,34 @@ class Product {
       });
   }
 
-  // CONTIUE HERE
-  // static fetchAll() {
-  //   const db = getDb();
-  //   return db
-  //     .collection("products")
-  //     .find()
-  //     .toArray();
-  // }
+  static fetchAll() {
+    const db = getDb();
+    return db
+      .collection("products")
+      .find() // returns a cursor {} object (not a promise)
+      .toArray() // places results into an [] and returns the promise
+      .then(products => {
+        // console.log("HERE", products);
+        return products; // using a 'return' in a .then() is like 'return Promise.resolve(products)'
+      })
+      .catch(err => console.log(err));
+  }
+
+  static findById(prodId) {
+    const db = getDb();
+    return (
+      db
+        .collection("products")
+        // .find({ _id: prodId }) // Still returns you a cursor; Note you can't compare _id: to a string.
+        .find({ _id: new mongodb.ObjectId(prodId) }) // Note that _id:ObjectId("....")
+        .next() // Run next() to get the last document found by .find()
+        .then(product => {
+          console.log("HERE", product); // Note that _id:ObjectId("....")
+          return product;
+        })
+        .catch(err => console.log(err))
+    );
+  }
 }
 
 module.exports = Product;
@@ -36,48 +57,21 @@ module.exports = Product;
 /*
   Notes:
   1 .find({title:"A book"}) - Returns all so be careful (Better to implement pagination)
-  - We can use this function to get all our products
   - .find() does not immediately return a promise though, instead it
-  returns a cursor object that allow us to go thourgh our documents step by step
+  returns a cursor object {} that allow us to go thourgh our documents step by step
 
 
   2 .find().toArray()
-  - .toArray() here returns a promise
+  - .toArray() places data into an array [] and then returns a promise
   - You could turn cursor object result to an array if you know there are
-  only a dozen or so documents
-*/
+  only a dozen or so documents.
+  
+  3 pagination
+  - Use this instead of .toArray() for large number of documents to be returned
+  over the wire
 
-/*
-// Ref only - Sequelize Model
-// Define a model - https://sequelize.org/master/class/lib/sequelize.js~Sequelize.html#instance-method-define
-// Keep table name 'product' singulare and seqeulize will 'pluralize' as 'products when sequelize.sync() is executed in app.js
-// With sequelize we don't define a model using class Product. Instead we use .define() method.
-// .define() returns a typeof Model
-const Product = sequelize.define("product", {
-  id: {
-    type: Sequelize.INTEGER,
-    autoIncrement: true,
-    allowNull: false,
-    primaryKey: true
-  },
-
-  title: Sequelize.STRING,
-
-  price: {
-    type: DataTypes.DOUBLE,
-    allowNull: false
-  },
-
-  imageUrl: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-
-  description: {
-    type: DataTypes.STRING,
-    allowNull: false
-  }
-});
-
-module.exports = Product;
+  4 .find({ _id: new mongodb.ObjectId(prodId)})
+  - You need 'mongodb' to get access to the ObjectId type.
+  - Note that _id is an Object ->  _id:ObjectId("....")
+  - Therefore you can't compare _id: to a string.
 */

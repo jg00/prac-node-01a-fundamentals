@@ -11,7 +11,7 @@ app.set("view engine", "ejs");
 app.set("views", "views");
 
 const adminRoutes = require("./routes/admin");
-// const shopRoutes = require("./routes/shop");
+const shopRoutes = require("./routes/shop");
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
@@ -31,9 +31,9 @@ app.use((req, res, next) => {
   next(); // quick fix for now
 });
 
-// Commented out temporarily
+// Routes middleware
 app.use("/admin", adminRoutes);
-// app.use(shopRoutes);
+app.use(shopRoutes);
 
 // 204: No Content
 app.use("/favicon.ico", (req, res, next) => {

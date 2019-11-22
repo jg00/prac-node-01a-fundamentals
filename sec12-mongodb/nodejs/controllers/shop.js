@@ -1,10 +1,9 @@
 const Product = require("../models/product");
-const Cart = require("../models/cart");
+// const Cart = require("../models/cart");
 
 // Navigation link "Products"
 exports.getProducts = (req, res, next) => {
-  // Sequelize model
-  Product.findAll()
+  Product.fetchAll()
     .then(products => {
       // console.log(products); // [{},{}..]
 
@@ -15,94 +14,30 @@ exports.getProducts = (req, res, next) => {
       });
     })
     .catch(err => console.log(err));
-
-  /* 'mysql2' package
-    Product.fetchAll()
-      .then(([rows, fieldData]) => {
-        res.render("shop/product-list", {
-          prods: rows, // Inject as an object with a key name that we can refer to in the template.
-          pageTitle: "All Products",
-          path: "/products"
-        });
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  */
-
-  /* File data source
-    Product.fetchAll(products => {
-      res.render("shop/product-list", {
-        prods: products, // Inject as an object with a key name that we can refer to in the template.
-        pageTitle: "All Products",
-        path: "/products"
-      });
-    });
-  */
 };
 
 // "Details" button in "Products" page
 exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId;
 
-  // Sequelize model
-  Product.findAll({
-    where: { id: prodId }
-  })
-    .then(products => {
-      // console.log(products); // .findAll() returns us an array
+  // Sequelize model - another approach
+  Product.findById(prodId)
+    .then(product => {
+      console.log(product); // .findByPk() returns an object {dataValues: {id:1, title:'A Book', ..}}
 
-      res.render("shop/product-detail", {
-        product: products[0],
-        pageTitle: products[0].title,
-        path: "/products"
-      });
-    })
-    .catch(err => console.log(err));
-
-  /*   
-    // Sequelize model - another approach
-    Product.findByPk(prodId)
-      .then(product => {
-        console.log(product); // .findByPk() returns an object {dataValues: {id:1, title:'A Book', ..}}
-
-        res.render("shop/product-detail", {
-          product: product,
-          pageTitle: product.title,
-          path: "/products"
-        });
-      })
-      .catch(err => console.log(err));
-  */
-
-  /* 'mysql2' package
-    Product.findById(prodId)
-      .then(([product]) => {
-        // console.log(product[0]); // {id:2, title:'', price:9.99, description:'', imageUrl:''}
-        res.render("shop/product-detail", {
-          product: product[0],
-          pageTitle: product.title,
-          path: "/products"
-        });
-      })
-      .catch(err => console.log(err));
-  */
-
-  /* File data source
-    Product.findById(prodId, product => {
       res.render("shop/product-detail", {
         product: product,
         pageTitle: product.title,
         path: "/products"
       });
-    });
-  */
+    })
+    .catch(err => console.log(err));
 };
 
 // Navigation link "Shop"
 exports.getIndex = (req, res, next) => {
   // Sequelize model
-  Product.findAll()
+  Product.fetchAll()
     .then(products => {
       // console.log(products); // [{},{}..]
 
