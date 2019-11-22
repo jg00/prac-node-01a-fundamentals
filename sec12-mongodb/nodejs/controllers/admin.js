@@ -1,4 +1,7 @@
+// const mongodb = require("mongodb");
 const Product = require("../models/product");
+
+// const ObjectId = mongodb.ObjectId; // MongoDb's ObjectId's constructor function; Better to convert the product id type on the product model directly.
 
 // Navigation link is still "Add Product" but now renders "edit-product.ejs"
 exports.getAddProduct = (req, res, next) => {
@@ -24,171 +27,76 @@ exports.postAddProduct = (req, res, next) => {
     .catch(err => console.log(err));
 };
 
-// START OF COMMENTED CODE
-// // "Edit" button within "Admin Products" page - passed in .productId as params and .edit via query params
-// exports.getEditProduct = (req, res, next) => {
-//   const editMode = req.query.edit; // Extracted value is always a string like "true"
-//   if (!editMode) {
-//     res.redirect("/"); // For now just redirect
-//   }
+// "Edit" button within "Admin Products" page - passed in .productId as params and .edit via query params
+exports.getEditProduct = (req, res, next) => {
+  const editMode = req.query.edit; // Extracted value is always a string like "true"
+  if (!editMode) {
+    res.redirect("/"); // For now just redirect
+  }
 
-//   // Sequelize model - after User/Product association created we get other methods.
-//   const prodId = req.params.productId;
+  const prodId = req.params.productId;
 
-//   // Lets say we only want to find products for the currently logged in user
-//   // Here we get products on a user and the sql statement will be select .. where product.userId=1 and product.id=2
-//   req.user
-//     .getProducts({ where: { id: prodId } }) // returns []
-//     // Product.findByPk(prodId)
-//     .then(products => {
-//       // console.log("HERE", product);
+  Product.findById(prodId)
+    .then(product => {
+      if (!product) {
+        return res.redirect("/");
+      }
 
-//       const product = products[0]; // since [] of products returned
-
-//       if (!product) {
-//         return res.redirect("/");
-//       }
-//       res.render("admin/edit-product", {
-//         pageTitle: "Edit Product",
-//         path: "/admin/edit-product", // Here we do not want any navigation link highlighted.
-//         editing: editMode,
-//         product: product
-//       });
-//     })
-//     .catch(err => console.log(err));
-
-//   /*
-//   // Sequelize model - before association
-//     const prodId = req.params.productId;
-//     Product.findByPk(prodId)
-//       .then(product => {
-//         if (!product) {
-//           return res.redirect("/");
-//         }
-//         res.render("admin/edit-product", {
-//           pageTitle: "Edit Product",
-//           path: "/admin/edit-product", // Here we do not want any navigation link highlighted.
-//           editing: editMode,
-//           product: product
-//         });
-//       })
-//       .catch(err => console.log(err));
-//   */
-
-//   /* 'mysql2' file data source
-//     const prodId = req.params.productId;
-//     Product.findById(prodId, product => {
-//       if (!product) {
-//         return res.redirect("/");
-//       }
-//       res.render("admin/edit-product", {
-//         pageTitle: "Edit Product",
-//         path: "/admin/edit-product", // Here we do not want any navigation link highlighted.
-//         editing: editMode,
-//         product: product
-//       });
-//     });
-//   */
-// };
-
-// /*
-//   "Update" button with the "admin/edit-product" page
-//   1 Fetch information for the product
-//   2 Create new product instance and populate with the fetched information
-//   3 Call save
-// */
-// exports.postEditProduct = (req, res, next) => {
-//   // console.log("check", req.body);
-
-//   // New values from our edit product form.  Note when destructuring - const { source: customName } = req.body
-//   const {
-//     productId: prodId,
-//     title: updatedTitle,
-//     imageUrl: updatedImageUrl,
-//     description: updatedDescription,
-//     price: updatedPrice
-//   } = req.body;
-
-//   Product.findByPk(prodId) // 1st promise
-//     .then(product => {
-//       // console.log(product); // returns our product {}
-//       // Note - here we can now work with all the attributes our product has.
-//       // This does not directly change our data in the database.  It will only do it locally for the moment.
-
-//       product.title = updatedTitle;
-//       product.price = updatedPrice;
-//       product.description = updatedDescription;
-//       product.imageUrl = updatedImageUrl;
-
-//       // instance object .save() method provided by Sequelize
-//       // If product does not exists yet, it will create a new one.
-//       // But if it does, it will update the existing product in the database.
-//       // We could nest our promises like product.save().then().catch(),
-//       // but better to return the promise.
-
-//       return product.save(); // 2nd promise
-//     })
-//     .then(saveResult => {
-//       console.log("UPDATED PRODUCT!", saveResult); // A promise 'resolve'
-//       res.redirect("/admin/products");
-//     })
-//     .catch(err => console.log(err)); // For error associated to "both" promises - .findByPk() promise and .save() promise
-
-//   /*
-//   'mysql2' package - we create instance and then call save() static function in the Product class.
-//   const updatedProduct = new Product(
-//     productId,
-//     updatedTitle,
-//     updatedImageUrl,
-//     updatedDescription,
-//     updatedPrice
-//   );
-
-//   updatedProduct.save(); // Important - It is best to have a callback so that we only redirect after saving is done.  Will return to this.
-//   res.redirect("/admin/products");
-// */
-// };
-
-// // Navigation link "Admin Products"
-// exports.getProducts = (req, res, next) => {
-//   // Sequelize model - after User/Product association created we get other methods.
-//   // Let's say we only want to return products associated tot he logged in user
-
-//   req.user
-//     .getProducts()
-//     // Product.findAll()
-//     .then(products => {
-//       // console.log(products); // [{},{}..]
-
-//       res.render("admin/products", {
-//         prods: products,
-//         pageTitle: "Admin Products",
-//         path: "/admin/products"
-//       });
-//     })
-//     .catch(err => console.log(err));
+      res.render("admin/edit-product", {
+        pageTitle: "Edit Product",
+        path: "/admin/edit-product", // Here we do not want any navigation link highlighted.
+        editing: editMode,
+        product: product
+      });
+    })
+    .catch(err => {
+      console.log(err);
+    });
+};
 
 /*
-    // Sequelize model - before association
-    // Sequelize model  - I jumped ahead - Will keep sequelized version for now
-    Product.findAll()
-      .then(products => {
-        // console.log(products); // [{},{}..]
+  "Update" button with the "admin/edit-product" page
+  1 Fetch information for the product
+  2 Create new product instance and populate with the fetched information
+  3 Call save
+*/
+exports.postEditProduct = (req, res, next) => {
+  // console.log("check", req.body);
 
-        res.render("admin/products", {
-          prods: products,
-          pageTitle: "Admin Products",
-          path: "/admin/products"
-        });
-      })
-      .catch(err => console.log(err));
-  */
+  // New values from our edit product form.  Note when destructuring - const { source: customName } = req.body
+  const {
+    productId: prodId,
+    title: updatedTitle,
+    imageUrl: updatedImageUrl,
+    description: updatedDescription,
+    price: updatedPrice
+  } = req.body;
 
-/* 'mysql2' package - I jumped ahead - will return to this and use original version below for now
+  // New product {} object based on our edited values but we specify the id of the product we are updating.
+  const product = new Product(
+    updatedTitle,
+    updatedPrice,
+    updatedDescription,
+    updatedImageUrl,
+    prodId // Here we simply passed the string but converted in the product model.  For MongoDB we need to simply wrap our id of type string as a MongoDb object id so it can be used by Mongdb when searching through documents.
+    // new ObjectId(prodId) // Done on the model instead. For MongoDB we need to simply wrap our id of type string as a MongoDb object id so it can be used by Mongdb when searching through documents.
+  );
+
+  product
+    .save()
+    .then(saveResult => {
+      console.log("UPDATED PRODUCT!", saveResult); // A promise 'resolve'
+      res.redirect("/admin/products");
+    })
+    .catch(err => console.log(err));
+};
+
+// // Navigation link "Admin Products"
+exports.getProducts = (req, res, next) => {
   Product.fetchAll()
-    .then(([rows, fieldData]) => {
+    .then(products => {
       res.render("admin/products", {
-        prods: rows,
+        prods: products,
         pageTitle: "Admin Products",
         path: "/admin/products"
       });
@@ -196,19 +104,7 @@ exports.postAddProduct = (req, res, next) => {
     .catch(err => {
       console.log(err);
     });
-  */
-
-/*
-    // Ref only for file data source
-    Product.fetchAll(products => {
-      res.render("admin/products", {
-        prods: products,
-        pageTitle: "Admin Products",
-        path: "/admin/products"
-      });
-    });
-  */
-// };   REMEMBER TO UNCOMMENT FOR exports.getProducts() above
+};
 
 // // "Delete" button within "Admin Products" page
 // exports.postDeleteProduct = (req, res, next) => {

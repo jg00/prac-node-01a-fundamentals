@@ -2,18 +2,31 @@ const mongodb = require("mongodb");
 const getDb = require("../util/database").getDb;
 
 class Product {
-  constructor(title, price, description, imageUrl) {
+  constructor(title, price, description, imageUrl, id) {
     this.title = title;
     this.price = price;
     this.description = description;
     this.imageUrl = imageUrl;
+    this._id = mongodb.ObjectId(id); // May be "undefined" when creating an "instance" of the product
   }
 
   save() {
     const db = getDb();
-    return db
-      .collection("products")
-      .insertOne(this)
+    let dbOp;
+
+    if (this._id) {
+      // Update the  existing product
+      dbOp = db
+        .collection("products")
+        .updateOne({ _id: this._id }, { $set: this }); // Note: _id will not be overwritten
+      // .updateOne({ _id: new mongodb.ObjectId(this._id) }, { $set: this }); // Note: _id will not be overwritten
+      // dbOp = db.collection('products').updateOne({_id: new mongodb.ObjectId(this._id)}, {$set: {title: this.title}}) // More verbose way also works
+    } else {
+      // Insert the new product
+      dbOp = db.collection("products").insertOne(this);
+    }
+
+    return dbOp
       .then(result => {
         console.log(result);
       })
@@ -21,6 +34,12 @@ class Product {
         console.log(err);
       });
   }
+
+  /*
+    .updateOne({find document}, {"specify how to update" that document (we do not do 'this')})
+      - Second argument does not take 'this' object becasue .updateOne() does not 'replace' the document
+      - {$set: {}} - We instruct MongoDB to set the key/value pairs to the document we found in the database
+  */
 
   static fetchAll() {
     const db = getDb();
