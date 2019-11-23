@@ -7,7 +7,7 @@ class Product {
     this.price = price;
     this.description = description;
     this.imageUrl = imageUrl;
-    this._id = mongodb.ObjectId(id); // May be "undefined" when creating an "instance" of the product
+    this._id = id ? mongodb.ObjectId(id) : null; // Requires check because mongodb.ObjectId(id) always creates an id but we want to be able to add a new prouduct
   }
 
   save() {
@@ -63,11 +63,22 @@ class Product {
         .find({ _id: new mongodb.ObjectId(prodId) }) // Note that _id:ObjectId("....")
         .next() // Run next() to get the last document found by .find()
         .then(product => {
-          console.log("HERE", product); // Note that _id:ObjectId("....")
+          // console.log("HERE", product); // Note that _id:ObjectId("....")
           return product;
         })
         .catch(err => console.log(err))
     );
+  }
+
+  static deleteById(prodId) {
+    const db = getDb();
+    return db
+      .collection("products")
+      .deleteOne({ _id: new mongodb.ObjectId(prodId) })
+      .then(result => {
+        console.log("DELETED");
+      })
+      .catch(err => console.log(err));
   }
 }
 

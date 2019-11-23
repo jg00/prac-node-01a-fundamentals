@@ -17,7 +17,7 @@ exports.getAddProduct = (req, res, next) => {
 exports.postAddProduct = (req, res, next) => {
   const { title, imageUrl, price, description } = req.body;
 
-  const product = new Product(title, price, description, imageUrl);
+  const product = new Product(title, price, description, imageUrl); // Do not pass id value to create a new product instance.
   product
     .save()
     .then(result => {
@@ -106,34 +106,14 @@ exports.getProducts = (req, res, next) => {
     });
 };
 
-// // "Delete" button within "Admin Products" page
-// exports.postDeleteProduct = (req, res, next) => {
-//   const prodId = req.body.productId;
+// "Delete" button within "Admin Products" page
+exports.postDeleteProduct = (req, res, next) => {
+  const prodId = req.body.productId;
 
-//   // Sequelize - 1st approach - Find product and then use the "instance" .destroy() method
-//   Product.findByPk(prodId) // 1st promise
-//     .then(product => {
-//       return product.destroy(); // 2nd promise. Again better to return the promise and handle in the .then() thereafter
-//     })
-//     .then(result => {
-//       console.log("DESTROYED PRODUCT");
-//       res.redirect("/admin/products");
-//     })
-//     .catch(err => console.log(err)); // Catches any errors for 1st or 2nd promise returned
-
-//   /*
-//     // Sequelize - 2nd approach - Using Model class .destroy() method
-//     Product.destroy({where:{ id: prodId}})
-//       .then(result => {
-//         console.log("PRODUCT DELETED!");
-//         res.redirect("/admin/products");
-//       })
-//       .catch(err => console.log(err));
-//   */
-
-//   /* File data source
-//     Product.deleteById(prodId); // Important - It is best to have a callback so that we only redirect after deleting the product is done.  Will return to this.
-//     res.redirect("/admin/products");
-//    */
-// };
-// END OF COMMENTED CODE
+  Product.deleteById(prodId)
+    .then(() => {
+      console.log("DESTROYED PRODUCT");
+      res.redirect("/admin/products");
+    })
+    .catch(err => console.log(err)); // Catches any errors for 1st or 2nd promise returned
+};
