@@ -2,12 +2,13 @@ const mongodb = require("mongodb");
 const getDb = require("../util/database").getDb;
 
 class Product {
-  constructor(title, price, description, imageUrl, id) {
+  constructor(title, price, description, imageUrl, id, userId) {
     this.title = title;
     this.price = price;
     this.description = description;
     this.imageUrl = imageUrl;
     this._id = id ? mongodb.ObjectId(id) : null; // Requires check because mongodb.ObjectId(id) always creates an id but we want to be able to add a new prouduct
+    this.userId = userId;
   }
 
   save() {
@@ -61,7 +62,7 @@ class Product {
         .collection("products")
         // .find({ _id: prodId }) // Still returns you a cursor; Note you can't compare _id: to a string.
         .find({ _id: new mongodb.ObjectId(prodId) }) // Note that _id:ObjectId("....")
-        .next() // Run next() to get the last document found by .find()
+        .next() // Run next() to get the first item based on the cursor
         .then(product => {
           // console.log("HERE", product); // Note that _id:ObjectId("....")
           return product;

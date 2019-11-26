@@ -17,7 +17,15 @@ exports.getAddProduct = (req, res, next) => {
 exports.postAddProduct = (req, res, next) => {
   const { title, imageUrl, price, description } = req.body;
 
-  const product = new Product(title, price, description, imageUrl); // Do not pass id value to create a new product instance.
+  const product = new Product(
+    title,
+    price,
+    description,
+    imageUrl,
+    null, // Do not pass id value to create a new product instance.
+    req.user._id // Purpose is for us to just know who is currently connected and who is adding the product.
+  );
+
   product
     .save()
     .then(result => {
@@ -26,6 +34,15 @@ exports.postAddProduct = (req, res, next) => {
     })
     .catch(err => console.log(err));
 };
+
+/*
+  Note on "req.user._id"
+    - Here don't need to "embedded" a user document when creating a product.  That is because if the 
+    user data changes you would have to change it in all product documents unless, it is 
+    user info that does not change like the associated username.
+    - Here we just "reference" the user id to the product document so that we know who is connected
+    eventhough we are not using it a lot. This is us creating a relation using a "reference".
+*/
 
 // "Edit" button within "Admin Products" page - passed in .productId as params and .edit via query params
 exports.getEditProduct = (req, res, next) => {

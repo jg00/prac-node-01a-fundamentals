@@ -4,6 +4,7 @@ const express = require("express");
 const app = express();
 
 const mongoConnect = require("./util/database").mongoConnect;
+const User = require("./models/user");
 
 const errorController = require("./controllers/error");
 
@@ -17,18 +18,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use((req, res, next) => {
-  /* 
-  User.findByPk(1)
+  User.findById("5ddd8dbf595642036ff4bc84")
     .then(user => {
-          req.user = user;
+      req.user = user;
       next();
     })
     .catch(err => {
       console.log(err);
     });
-*/
-
-  next(); // quick fix for now
 });
 
 // Routes middleware
