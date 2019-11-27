@@ -76,53 +76,18 @@ exports.getIndex = (req, res, next) => {
   */
 };
 
-// After User/Cart associated via Sequelize - Now we want to get the cart assoiated to our existing user and get all products in the cart
 // Navigation link "Cart"
 exports.getCart = (req, res, next) => {
-  // console.log("HERE", req.user.cart); // 'undefined' because we never added cart property to our req object.  We can still get cart through our req.user.getCart() Sequelize instance method below.
-  // -> Key here with req.user.getCart() is "we are loading the cart associated to a user from the database"
   req.user
-    .getCart() // Sequelize instance method
-    .then(cart => {
-      // console.log("HERE", cart); // null - originally because we did not have a cart associated to the demo user
-
-      // Now with the cart available, we can fetch the products available inside of it.
-      return cart
-        .getProducts()
-        .then(products => {
-          // console.log("HERE", products);
-          res.render("shop/cart", {
-            path: "/cart",
-            pageTitle: "Your Cart",
-            products: products // This was previously productData:product.  This means we have to change how it is referenced in the cart.ejs view.
-            // Also note we can now access products.cartItem.quantity in our view. (cartItem is the 'joining table' we defined to join n:m - cart:product)
-          });
-        })
-        .catch(err => console.log(err));
+    .getCart()
+    .then(products => {
+      res.render("shop/cart", {
+        path: "/cart",
+        pageTitle: "Your Cart",
+        products: products
+      });
     })
     .catch(err => console.log);
-
-  // Cart.getCart(cart => {
-  //   // Remeber the cart only has the product id's, qty, and cart total.  However we also need produduct detail info.
-  //   Product.fetchAll(products => {
-  //     const cartProducts = [];
-  //     // Now that we have all the products we need to filter for products that are actually in the cart
-  //     for (product of products) {
-  //       const cartProductData = cart.products.find(
-  //         prod => prod.id === product.id
-  //       );
-  //       if (cartProductData) {
-  //         cartProducts.push({ productData: product, qty: cartProductData.qty }); // cartProducts.push(product) - You need the other info as well
-  //       }
-  //     }
-
-  //     res.render("shop/cart", {
-  //       pageTitle: "Your Cart",
-  //       path: "/cart",
-  //       products: cartProducts
-  //     });
-  //   });
-  // });
 };
 
 /*
@@ -167,6 +132,7 @@ exports.postCart = (req, res, next) => {
     })
     .then(result => {
       console.log("HERE", result);
+      res.redirect("/cart");
     })
     .catch(err => {
       console.log(err);

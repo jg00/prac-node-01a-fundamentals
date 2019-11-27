@@ -7,7 +7,7 @@ class User {
   constructor(username, email, cart, id) {
     this.name = username;
     this.email = email;
-    this.cart = cart; // { items: [ {product:_, quantity:_}, {}, {} ] }
+    this.cart = cart; // { items: [ {productId:_, quantity:_}, {}, {} ] }
     this._id = id;
   }
 
@@ -69,6 +69,31 @@ class User {
         const product.quantity = 1
         const updatedCart = { items: [product]}
     */
+
+  getCart() {
+    // return this.cart;  // We also could return the cart and all cart items
+
+    const db = getDb();
+    const productIds = this.cart.items.map(i => {
+      return i.productId;
+    });
+
+    return db
+      .collection("products")
+      .find({ _id: { $in: productIds } }) // This returns a cursor with all the matching products
+      .toArray() // convert cursor to javascript array
+      .then(products => {
+        // Now we need quantity for each product
+        return products.map(p => {
+          return {
+            ...p,
+            quantity: this.cart.items.find(i => {
+              return i.productId.toString() === p._id.toString();
+            }).quantity
+          };
+        });
+      });
+  }
 
   static findById(userId) {
     const db = getDb();
