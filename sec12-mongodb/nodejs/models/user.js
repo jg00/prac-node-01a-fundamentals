@@ -7,7 +7,7 @@ class User {
   constructor(username, email, cart, id) {
     this.name = username;
     this.email = email;
-    this.cart = cart; // { items: [{product:_, quantity:_}, {}]}
+    this.cart = cart; // { items: [ {product:_, quantity:_}, {}, {} ] }
     this._id = id;
   }
 
@@ -18,12 +18,37 @@ class User {
 
   addToCart(product) {
     // 1a Check if product item already exists. If it does find out it's quantity and update.
-    // const cartProduct = this.cart.items.findIndex(cp => {
-    //   return cp._id === product._id
-    // })
+    const cartProductIndex = this.cart.items.findIndex(cp => {
+      return cp.productId.toString() === product._id.toString();
+    });
+
+    let newQuantity = 1;
+    const updatedCartItems = [...this.cart.items]; // Get new array with all items that are in the cart
+
+    if (cartProductIndex >= 0) {
+      newQuantity = this.cart.items[cartProductIndex].quantity + 1;
+      updatedCartItems[cartProductIndex].quantity = newQuantity;
+    } else {
+      updatedCartItems.push({
+        productId: new ObjectId(product._id),
+        quantity: newQuantity
+      });
+    }
 
     // 1b If no cart build cart with initial product and add a quantity field (We spread ...product because we also want to add a quantity property on the fly).
-    const updatedCart = { items: [{ ...product, quantity: 1 }] };
+    // const updatedCart = { items: [{ ...product, quantity: 1 }] };
+
+    // 1c Key idea - In 1b we stored the product object.  However, issue will be if we change for example the product price, we would
+    // have to change in all user carts to reflect the change.  Better approach then is just to store the product id.
+    // const updatedCart = {
+    //   items: [{ productId: new ObjectId(product._id), quantity: newQuantity }]
+    // };
+
+    // 1d New version
+    const updatedCart = {
+      items: updatedCartItems
+    };
+
     const db = getDb();
 
     return db

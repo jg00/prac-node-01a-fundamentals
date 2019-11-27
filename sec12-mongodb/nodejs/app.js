@@ -20,7 +20,8 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use((req, res, next) => {
   User.findById("5ddd8dbf595642036ff4bc84")
     .then(user => {
-      req.user = user;
+      req.user = new User(user.name, user.email, user.cart, user._id);
+      // req.user = user; // { _id, name, email } returned.  We want our User object instance with our methods and properties.
       next();
     })
     .catch(err => {
