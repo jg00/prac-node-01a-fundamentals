@@ -39,6 +39,9 @@ app.use("/favicon.ico", (req, res, next) => {
 
 app.use(errorController.get404);
 
+// Accomodate for deprecated functions like Product.findeOneAndRemove()
+mongoose.set("useFindAndModify", false);
+
 // Mongoose will manage one connection behind the scenes.  Our setup is different than when using the MongoDb driver.
 mongoose
   .connect(

@@ -1,8 +1,6 @@
 // const mongodb = require("mongodb");
 const Product = require("../models/product");
 
-// const ObjectId = mongodb.ObjectId; // MongoDb's ObjectId's constructor function; Better to convert the product id type on the product model directly.
-
 // Navigation link is still "Add Product" but now renders "edit-product.ejs"
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
@@ -88,28 +86,58 @@ exports.postEditProduct = (req, res, next) => {
     price: updatedPrice
   } = req.body;
 
-  // New product {} object based on our edited values but we specify the id of the product we are updating.
-  const product = new Product(
-    updatedTitle,
-    updatedPrice,
-    updatedDescription,
-    updatedImageUrl,
-    prodId // Here we simply passed the string but converted in the product model.  For MongoDB we need to simply wrap our id of type string as a MongoDb object id so it can be used by Mongdb when searching through documents.
-    // new ObjectId(prodId) // Done on the model instead. For MongoDB we need to simply wrap our id of type string as a MongoDb object id so it can be used by Mongdb when searching through documents.
-  );
+  /*
+    With mongoose instead of creating a new product:
+    1a We can fetch a product 'from the database'. Note here we have 
+      a full mongoose object returned with methods like save().
+    1b We update that mongoose product object returned
+    2 then call save() on that product
+  */
 
-  product
-    .save()
-    .then(saveResult => {
-      console.log("UPDATED PRODUCT!", saveResult); // A promise 'resolve'
+  Product.findById(prodId)
+    .then(product => {
+      (product.title = updatedTitle),
+        (product.price = updatedPrice),
+        (product.description = updatedDescription),
+        (product.imageUrl = updatedImageUrl);
+
+      return product.save();
+    })
+    .then(result => {
+      // console.log("UPDATED PRODUCT!", result); // A promise 'resolve'
       res.redirect("/admin/products");
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      console.log(err);
+    });
+
+  /* MongoDb version
+    // New product {} object based on our edited values but we specify the id of the product we are updating.
+    const product = new Product(
+      updatedTitle,
+      updatedPrice,
+      updatedDescription,
+      updatedImageUrl,
+      prodId // Here we simply passed the string but converted in the product model.  For MongoDB we need to simply wrap our id of type string as a MongoDb object id so it can be used by Mongdb when searching through documents.
+      // new ObjectId(prodId) // Done on the model instead. For MongoDB we need to simply wrap our id of type string as a MongoDb object id so it can be used by Mongdb when searching through documents.
+    );
+
+    product
+      .save()
+      .then(saveResult => {
+        console.log("UPDATED PRODUCT!", saveResult); // A promise 'resolve'
+        res.redirect("/admin/products");
+      })
+      .catch(err => console.log(err));
+  */
 };
 
 // // Navigation link "Admin Products"
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
+  // Product.find().cursor().next() <- .find() for mongoose does not return a cursor however you could still get it
+  // Product.find().cursor().eachAsync()  <- allow you to loop through the cursor
+
+  Product.find()
     .then(products => {
       res.render("admin/products", {
         prods: products,
@@ -126,7 +154,7 @@ exports.getProducts = (req, res, next) => {
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
 
-  Product.deleteById(prodId)
+  Product.findOneAndRemove(prodId)
     .then(() => {
       console.log("DESTROYED PRODUCT");
       res.redirect("/admin/products");

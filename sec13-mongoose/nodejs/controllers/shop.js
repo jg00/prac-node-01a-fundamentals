@@ -3,9 +3,9 @@ const Product = require("../models/product");
 
 // Navigation link "Products"
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
+  Product.find()
     .then(products => {
-      // console.log(products); // [{},{}..]
+      // console.log("getProducts", products); // [{},{}..]
 
       res.render("shop/product-list", {
         prods: products, // Inject as an object with a key name that we can refer to in the template.
@@ -20,10 +20,9 @@ exports.getProducts = (req, res, next) => {
 exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId;
 
-  // Sequelize model - another approach
-  Product.findById(prodId)
+  Product.findById(prodId) // Mongoose can also be passed a string id and mongoose will conveniently change to a mongodb objectId.
     .then(product => {
-      console.log(product); // .findByPk() returns an object {dataValues: {id:1, title:'A Book', ..}}
+      // console.log("getProduct", product); // .findByPk() returns an object {dataValues: {id:1, title:'A Book', ..}}
 
       res.render("shop/product-detail", {
         product: product,
@@ -37,9 +36,9 @@ exports.getProduct = (req, res, next) => {
 // Navigation link "Shop"
 exports.getIndex = (req, res, next) => {
   // Sequelize model
-  Product.fetchAll()
+  Product.find()
     .then(products => {
-      // console.log(products); // [{},{}..]
+      // console.log(".getIndex", products); // [{},{}..]
 
       res.render("shop/index", {
         prods: products,
