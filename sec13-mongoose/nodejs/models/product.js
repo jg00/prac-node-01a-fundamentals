@@ -1,89 +1,114 @@
-const mongodb = require("mongodb");
-const getDb = require("../util/database").getDb;
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-class Product {
-  constructor(title, price, description, imageUrl, id, userId) {
-    this.title = title;
-    this.price = price;
-    this.description = description;
-    this.imageUrl = imageUrl;
-    this._id = id ? mongodb.ObjectId(id) : null; // Requires check because mongodb.ObjectId(id) always creates an id but we want to be able to add a new prouduct
-    this.userId = userId;
+// Define data definition
+const productSchema = new Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  price: {
+    type: Number,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  imageUrl: {
+    type: String,
+    required: true
   }
+});
 
-  save() {
-    const db = getDb();
-    let dbOp;
+module.exports = mongoose.model("Product", productSchema); // Mongoose will take our model name and pluralize to 'products'
 
-    if (this._id) {
-      // Update the  existing product
-      dbOp = db
-        .collection("products")
-        .updateOne({ _id: this._id }, { $set: this }); // Note: _id will not be overwritten
-      // .updateOne({ _id: new mongodb.ObjectId(this._id) }, { $set: this }); // Note: _id will not be overwritten
-      // dbOp = db.collection('products').updateOne({_id: new mongodb.ObjectId(this._id)}, {$set: {title: this.title}}) // More verbose way also works
-    } else {
-      // Insert the new product
-      dbOp = db.collection("products").insertOne(this);
-    }
+// const mongodb = require("mongodb");
+// const getDb = require("../util/database").getDb;
 
-    return dbOp
-      .then(result => {
-        console.log(result);
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }
+// class Product {
+//   constructor(title, price, description, imageUrl, id, userId) {
+//     this.title = title;
+//     this.price = price;
+//     this.description = description;
+//     this.imageUrl = imageUrl;
+//     this._id = id ? mongodb.ObjectId(id) : null; // Requires check because mongodb.ObjectId(id) always creates an id but we want to be able to add a new prouduct
+//     this.userId = userId;
+//   }
 
-  /*
-    .updateOne({find document}, {"specify how to update" that document (we do not do 'this')})
-      - Second argument does not take 'this' object becasue .updateOne() does not 'replace' the document
-      - {$set: {}} - We instruct MongoDB to set the key/value pairs to the document we found in the database
-  */
+//   save() {
+//     const db = getDb();
+//     let dbOp;
 
-  static fetchAll() {
-    const db = getDb();
-    return db
-      .collection("products")
-      .find() // returns a cursor {} object (not a promise)
-      .toArray() // places results into an [] and returns the promise
-      .then(products => {
-        // console.log("HERE", products);
-        return products; // using a 'return' in a .then() is like 'return Promise.resolve(products)'
-      })
-      .catch(err => console.log(err));
-  }
+//     if (this._id) {
+//       // Update the  existing product
+//       dbOp = db
+//         .collection("products")
+//         .updateOne({ _id: this._id }, { $set: this }); // Note: _id will not be overwritten
+//       // .updateOne({ _id: new mongodb.ObjectId(this._id) }, { $set: this }); // Note: _id will not be overwritten
+//       // dbOp = db.collection('products').updateOne({_id: new mongodb.ObjectId(this._id)}, {$set: {title: this.title}}) // More verbose way also works
+//     } else {
+//       // Insert the new product
+//       dbOp = db.collection("products").insertOne(this);
+//     }
 
-  static findById(prodId) {
-    const db = getDb();
-    return (
-      db
-        .collection("products")
-        // .find({ _id: prodId }) // Still returns you a cursor; Note you can't compare _id: to a string.
-        .find({ _id: new mongodb.ObjectId(prodId) }) // Note that _id:ObjectId("....")
-        .next() // Run next() to get the first item based on the cursor
-        .then(product => {
-          // console.log("HERE", product); // Note that _id:ObjectId("....")
-          return product;
-        })
-        .catch(err => console.log(err))
-    );
-  }
+//     return dbOp
+//       .then(result => {
+//         console.log(result);
+//       })
+//       .catch(err => {
+//         console.log(err);
+//       });
+//   }
 
-  static deleteById(prodId) {
-    const db = getDb();
-    return db
-      .collection("products")
-      .deleteOne({ _id: new mongodb.ObjectId(prodId) })
-      .then(result => {
-        console.log("DELETED");
-      })
-      .catch(err => console.log(err));
-  }
-}
+//   /*
+//     .updateOne({find document}, {"specify how to update" that document (we do not do 'this')})
+//       - Second argument does not take 'this' object becasue .updateOne() does not 'replace' the document
+//       - {$set: {}} - We instruct MongoDB to set the key/value pairs to the document we found in the database
+//   */
 
-module.exports = Product;
+//   static fetchAll() {
+//     const db = getDb();
+//     return db
+//       .collection("products")
+//       .find() // returns a cursor {} object (not a promise)
+//       .toArray() // places results into an [] and returns the promise
+//       .then(products => {
+//         // console.log("HERE", products);
+//         return products; // using a 'return' in a .then() is like 'return Promise.resolve(products)'
+//       })
+//       .catch(err => console.log(err));
+//   }
+
+//   static findById(prodId) {
+//     const db = getDb();
+//     return (
+//       db
+//         .collection("products")
+//         // .find({ _id: prodId }) // Still returns you a cursor; Note you can't compare _id: to a string.
+//         .find({ _id: new mongodb.ObjectId(prodId) }) // Note that _id:ObjectId("....")
+//         .next() // Run next() to get the first item based on the cursor
+//         .then(product => {
+//           // console.log("HERE", product); // Note that _id:ObjectId("....")
+//           return product;
+//         })
+//         .catch(err => console.log(err))
+//     );
+//   }
+
+//   static deleteById(prodId) {
+//     const db = getDb();
+//     return db
+//       .collection("products")
+//       .deleteOne({ _id: new mongodb.ObjectId(prodId) })
+//       .then(result => {
+//         console.log("DELETED");
+//       })
+//       .catch(err => console.log(err));
+//   }
+// }
+
+// module.exports = Product;
 
 /*
   Notes:

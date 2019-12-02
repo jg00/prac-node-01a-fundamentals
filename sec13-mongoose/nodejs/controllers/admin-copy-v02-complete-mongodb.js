@@ -17,16 +17,17 @@ exports.getAddProduct = (req, res, next) => {
 exports.postAddProduct = (req, res, next) => {
   const { title, imageUrl, price, description } = req.body;
 
-  // Now we a Product model managed by Mongoose. Mongoose models comes with functions we can use.
-  const product = new Product({
+  const product = new Product(
     title,
     price,
     description,
-    imageUrl
-  });
+    imageUrl,
+    null, // Do not pass id value to create a new product instance.
+    req.user._id // Purpose is for us to just know who is currently connected and who is adding the product.
+  );
 
   product
-    .save() // Mongoose will provide this save() method.  Technically we don't get a promise but Mongoose provide it for us
+    .save()
     .then(result => {
       console.log("Created Product");
       res.redirect("/admin/products"); // This may need to go to "Admin Products" page
