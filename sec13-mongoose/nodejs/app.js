@@ -5,7 +5,7 @@ const app = express();
 const mongoose = require("mongoose");
 
 const errorController = require("./controllers/error");
-// const User = require("./models/user");
+const User = require("./models/user");
 
 app.set("view engine", "ejs");
 app.set("views", "views");
@@ -16,17 +16,18 @@ const shopRoutes = require("./routes/shop");
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// app.use((req, res, next) => {
-//   User.findById("5ddd8dbf595642036ff4bc84")
-//     .then(user => {
-//       req.user = new User(user.name, user.email, user.cart, user._id);
-//       // req.user = user; // { _id, name, email } returned.  We want our User object instance with our methods and properties.
-//       next();
-//     })
-//     .catch(err => {
-//       console.log(err);
-//     });
-// });
+app.use((req, res, next) => {
+  User.findById("5de6ad7bafb5db05b6cf3739")
+    .then(user => {
+      req.user = user; // Mongoose user model object
+      // req.user = new User(user.name, user.email, user.cart, user._id);
+      // req.user = user; // { _id, name, email } returned.  We want our User object instance with our methods and properties.
+      next();
+    })
+    .catch(err => {
+      console.log(err);
+    });
+});
 
 // Routes middleware
 app.use("/admin", adminRoutes);
@@ -49,6 +50,20 @@ mongoose
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then(result => {
+    // Test user with intialized cart - for now creating user(s) whenever we restart server
+    User.findOne().then(user => {
+      if (!user) {
+        const user = new User({
+          name: "Lisa",
+          email: "lisa@test.com",
+          cart: {
+            items: []
+          }
+        });
+        user.save();
+      }
+    });
+
     app.listen(3000, () => console.log("Server Started"));
   })
   .catch(err => {

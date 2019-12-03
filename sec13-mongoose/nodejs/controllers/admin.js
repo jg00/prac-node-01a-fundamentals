@@ -20,7 +20,9 @@ exports.postAddProduct = (req, res, next) => {
     title,
     price,
     description,
-    imageUrl
+    imageUrl,
+    userId: req.user // Conveniently you can just store entire object and mongoose will use the user._id
+    // userId: req.user._id
   });
 
   product
@@ -137,8 +139,15 @@ exports.getProducts = (req, res, next) => {
   // Product.find().cursor().next() <- .find() for mongoose does not return a cursor however you could still get it
   // Product.find().cursor().eachAsync()  <- allow you to loop through the cursor
 
+  // Note the .select() and .populate() for data fetching with mongoose.
   Product.find()
+
+    // .select("title price -_id") // You can specify fields to return and exclude
+    // .populate("userId", "name") // Allows you to get the whole user object and not just the userId associated to the product
+
+    .populate("userId") // Allows you to get the whole user object and not just the userId associated to the product
     .then(products => {
+      console.log("HERE", products);
       res.render("admin/products", {
         prods: products,
         pageTitle: "Admin Products",

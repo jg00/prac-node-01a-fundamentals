@@ -18,6 +18,11 @@ const productSchema = new Schema({
   imageUrl: {
     type: String,
     required: true
+  },
+  userId: {
+    type: Schema.Types.ObjectId, // Note ObjectId could be further specified as a 'User' Object Id using ref property.
+    ref: "User", // Refer to the 'User' model that shows that that ObjectId is referring to.
+    required: true
   }
 });
 
