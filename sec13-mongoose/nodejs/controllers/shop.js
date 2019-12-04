@@ -52,8 +52,11 @@ exports.getIndex = (req, res, next) => {
 // Navigation link "Cart"
 exports.getCart = (req, res, next) => {
   req.user
-    .getCart()
-    .then(products => {
+    .populate("cart.items.productId") // .populates does not return a promise
+    .execPopulate() // This is how we can get a promise from .populate()
+    .then(user => {
+      // console.log("HERE", user.cart.items);
+      const products = user.cart.items;
       res.render("shop/cart", {
         path: "/cart",
         pageTitle: "Your Cart",
@@ -90,7 +93,7 @@ exports.postCartDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
 
   req.user
-    .deleteItemFromCart(prodId)
+    .removeFromCart(prodId)
 
     .then(result => {
       // console.log("Item removed from the cart!");

@@ -56,10 +56,19 @@ userSchema.methods.addToCart = function(product) {
 
   // 1d New version
   const updatedCart = {
-    items: updatedCartItems
+    items: updatedCartItems // updatedCartItems is array of objects
   };
 
-  this.cart = updatedCart;
+  this.cart = updatedCart; // updatedCart is an object with property items array of products
+  return this.save();
+};
+
+userSchema.methods.removeFromCart = function(productId) {
+  const updatedCartItems = this.cart.items.filter(item => {
+    return item.productId.toString() !== productId.toString();
+  });
+
+  this.cart.items = updatedCartItems;
   return this.save();
 };
 
