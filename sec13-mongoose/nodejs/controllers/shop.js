@@ -71,12 +71,13 @@ exports.getCart = (req, res, next) => {
 */
 exports.postCart = (req, res, next) => {
   const prodId = req.body.productId; // Note this is a string
+
   Product.findById(prodId)
     .then(product => {
-      return req.user.addToCart(product);
+      return req.user.addToCart(product); // on instance of the current user we save it's cart
     })
     .then(result => {
-      console.log("HERE", result);
+      console.log("postCart", result);
       res.redirect("/cart");
     })
     .catch(err => {
