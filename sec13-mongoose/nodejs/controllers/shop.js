@@ -1,5 +1,6 @@
 const Product = require("../models/product");
 // const Cart = require("../models/cart");
+const Order = require("../models/order");
 
 // Navigation link "Products"
 exports.getProducts = (req, res, next) => {
@@ -107,8 +108,28 @@ exports.postCartDeleteProduct = (req, res, next) => {
 // Post order
 exports.postOrders = (req, res, next) => {
   req.user
-    .addOrder()
+    .populate("cart.items.productId") // .populates does not return a promise
+    .execPopulate() // This is how we can get a promise from .populate()
+    .then(user => {
+      console.log("HERE", user.cart.items);
+      const products = user.cart.items.map(i => {
+        return { quantity: i.quantity, product: { ...i.productId._doc } }; // mongoose field _doc but looks like it still works without the _doc.
+      });
+
+      const order = new Order({
+        user: {
+          name: req.user.name,
+          userId: req.user
+        },
+        products: products
+      });
+
+      return order.save();
+    })
     .then(result => {
+      return req.user.clearCart();
+    })
+    .then(() => {
       res.redirect("/orders");
     })
     .catch(err => {
@@ -124,9 +145,10 @@ exports.postOrders = (req, res, next) => {
 
 // Navigation link "Orders"
 exports.getOrders = (req, res, next) => {
-  req.user
-    .getOrders()
+  Order.find({ "user.userId": req.user._id })
+
     .then(orders => {
+      console.log("HERE", orders);
       res.render("shop/orders", {
         pageTitle: "Your Orders",
         path: "/orders",
