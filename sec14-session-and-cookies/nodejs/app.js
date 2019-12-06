@@ -3,6 +3,7 @@ const path = require("path");
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
+const session = require("express-session");
 
 const errorController = require("./controllers/error");
 const User = require("./models/user");
@@ -16,6 +17,11 @@ const authRoutes = require("./routes/auth");
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
+
+// Initialize a session.  Execute as a function and pass setup information.
+app.use(
+  session({ secret: "my secret", resave: false, saveUninitialized: false })
+);
 
 app.use((req, res, next) => {
   User.findById("5de6ad7bafb5db05b6cf3739")
