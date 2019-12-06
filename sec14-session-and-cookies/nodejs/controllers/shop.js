@@ -42,7 +42,7 @@ exports.getIndex = (req, res, next) => {
   Product.find()
     .then(products => {
       // console.log(".getIndex", products); // [{},{}..]
-      console.log("CHECK", req.user);
+      // console.log("CHECK", req.user);
 
       res.render("shop/index", {
         prods: products,
@@ -116,7 +116,7 @@ exports.postOrders = (req, res, next) => {
     .populate("cart.items.productId") // .populates does not return a promise
     .execPopulate() // This is how we can get a promise from .populate()
     .then(user => {
-      console.log("HERE", user.cart.items);
+      // console.log("HERE", user.cart.items);
       const products = user.cart.items.map(i => {
         return { quantity: i.quantity, product: { ...i.productId._doc } }; // mongoose field _doc but looks like it still works without the _doc.
       });
