@@ -8,7 +8,7 @@ exports.getAddProduct = (req, res, next) => {
     path: "/admin/add-product", // Note property path value is arbitrary and will be used in our template to control UI features
     editing: false,
     product: "", // Fix for when clicking on Add Product
-    isAuthenticated: req.isLoggedIn
+    isAuthenticated: req.session.isLoggedIn
   });
 };
 
@@ -22,7 +22,7 @@ exports.postAddProduct = (req, res, next) => {
     price,
     description,
     imageUrl,
-    userId: req.user // Conveniently you can just store entire object and mongoose will use the user._id
+    userId: req.session.user // Conveniently you can just store entire object and mongoose will use the user._id
     // userId: req.user._id
   });
 
@@ -64,7 +64,7 @@ exports.getEditProduct = (req, res, next) => {
         path: "/admin/edit-product", // Here we do not want any navigation link highlighted.
         editing: editMode,
         product: product,
-        isAuthenticated: req.isLoggedIn
+        isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch(err => {
@@ -154,7 +154,7 @@ exports.getProducts = (req, res, next) => {
         prods: products,
         pageTitle: "Admin Products",
         path: "/admin/products",
-        isAuthenticated: req.isLoggedIn
+        isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch(err => {

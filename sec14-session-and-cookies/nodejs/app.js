@@ -35,6 +35,7 @@ app.use(
   })
 );
 
+/*  Test user only.  Now set in auth.js in session.
 app.use((req, res, next) => {
   User.findById("5de6ad7bafb5db05b6cf3739")
     .then(user => {
@@ -47,6 +48,7 @@ app.use((req, res, next) => {
       console.log(err);
     });
 });
+ */
 
 // Routes middleware
 app.use("/admin", adminRoutes);
