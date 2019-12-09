@@ -4,6 +4,13 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const session = require("express-session");
+const MongoDBStore = require("connect-mongodb-session")(session); //Returns a single function that takes the session and returns a MongoDBStore class.
+
+const MONGODB_URI = `mongodb://bart:0BPmJVZdUUrIftYg@cluster0-shard-00-00-f9pzz.mongodb.net:27017,cluster0-shard-00-01-f9pzz.mongodb.net:27017,cluster0-shard-00-02-f9pzz.mongodb.net:27017/shop?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority`;
+const store = new MongoDBStore({
+  uri: MONGODB_URI,
+  collection: "sessions"
+});
 
 const errorController = require("./controllers/error");
 const User = require("./models/user");
@@ -20,7 +27,12 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Initialize a session.  Execute as a function and pass setup information.
 app.use(
-  session({ secret: "my secret", resave: false, saveUninitialized: false })
+  session({
+    secret: "my secret",
+    resave: false,
+    saveUninitialized: false,
+    store: store
+  })
 );
 
 app.use((req, res, next) => {
@@ -54,7 +66,8 @@ mongoose.set("useFindAndModify", false);
 // Mongoose will manage one connection behind the scenes.  Our setup is different than when using the MongoDb driver.
 mongoose
   .connect(
-    "mongodb://bart:0BPmJVZdUUrIftYg@cluster0-shard-00-00-f9pzz.mongodb.net:27017,cluster0-shard-00-01-f9pzz.mongodb.net:27017,cluster0-shard-00-02-f9pzz.mongodb.net:27017/shop?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority",
+    // "mongodb://bart:0BPmJVZdUUrIftYg@cluster0-shard-00-00-f9pzz.mongodb.net:27017,cluster0-shard-00-01-f9pzz.mongodb.net:27017,cluster0-shard-00-02-f9pzz.mongodb.net:27017/shop?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority",
+    MONGODB_URI,
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then(result => {
