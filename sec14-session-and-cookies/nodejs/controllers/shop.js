@@ -42,8 +42,8 @@ exports.getIndex = (req, res, next) => {
   Product.find()
     .then(products => {
       // console.log(".getIndex", products); // [{},{}..]
-      console.log("CHECK", req.session.user);
-      console.log("CHECK2", req.session.isLoggedIn);
+      // console.log("CHECK2", req.session.user);
+      // console.log("CHECK2", req.session.isLoggedIn);
 
       res.render("shop/index", {
         prods: products,
@@ -57,11 +57,14 @@ exports.getIndex = (req, res, next) => {
 
 // Navigation link "Cart"
 exports.getCart = (req, res, next) => {
-  req.session.user
+  // req.session.user // MongoDBStore session user
+  // console.log("HERE", req.user);
+
+  req.user // Mongoose user
     .populate("cart.items.productId") // .populates does not return a promise
     .execPopulate() // This is how we can get a promise from .populate()
     .then(user => {
-      // console.log("HERE", user.cart.items);
+      // console.log("HERE2", user.cart.items);
       const products = user.cart.items;
       res.render("shop/cart", {
         path: "/cart",
@@ -77,17 +80,17 @@ exports.getCart = (req, res, next) => {
   1 Fetch product
   2 Add the product object to cart
 
-  Important - req.session.user is our user {} object instance set in app.js.  This means we have access to our User object methods and properties.
+  Important - req.user is our user {} object instance set in app.js.  This means we have access to our User object methods and properties.
 */
 exports.postCart = (req, res, next) => {
   const prodId = req.body.productId; // Note this is a string
 
   Product.findById(prodId)
     .then(product => {
-      return req.session.user.addToCart(product); // on instance of the current user we save it's cart
+      return req.user.addToCart(product); // on instance of the current user we save it's cart
     })
     .then(result => {
-      console.log("postCart", result);
+      // console.log("postCart", result);
       res.redirect("/cart");
     })
     .catch(err => {
@@ -99,7 +102,7 @@ exports.postCart = (req, res, next) => {
 exports.postCartDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
 
-  req.session.user
+  req.user
     .removeFromCart(prodId)
 
     .then(result => {
@@ -113,7 +116,7 @@ exports.postCartDeleteProduct = (req, res, next) => {
 
 // Post order
 exports.postOrders = (req, res, next) => {
-  req.session.user
+  req.user
     .populate("cart.items.productId") // .populates does not return a promise
     .execPopulate() // This is how we can get a promise from .populate()
     .then(user => {
@@ -124,8 +127,8 @@ exports.postOrders = (req, res, next) => {
 
       const order = new Order({
         user: {
-          name: req.session.user.name,
-          userId: req.session.user
+          name: req.user.name,
+          userId: req.user
         },
         products: products
       });
@@ -133,7 +136,7 @@ exports.postOrders = (req, res, next) => {
       return order.save();
     })
     .then(result => {
-      return req.session.user.clearCart();
+      return req.user.clearCart();
     })
     .then(() => {
       res.redirect("/orders");
@@ -151,7 +154,7 @@ exports.postOrders = (req, res, next) => {
 
 // Navigation link "Orders"
 exports.getOrders = (req, res, next) => {
-  Order.find({ "user.userId": req.session.user._id })
+  Order.find({ "user.userId": req.user._id })
 
     .then(orders => {
       // console.log("HERE", orders);

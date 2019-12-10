@@ -35,7 +35,26 @@ app.use(
   })
 );
 
-/*  Test user only.  Now set in auth.js in session.
+app.use((req, res, next) => {
+  if (!req.session.user) {
+    return next();
+  }
+
+  // console.log("SESSION USER", req.session.user); // Here session data fetched via MongoDBStore
+
+  // To get our Mongoose model custom functions we need to fetch the user with the help of Mongoose.
+  User.findById(req.session.user._id)
+    .then(user => {
+      // console.log("MONGOOSE MODEL USER", user);
+      req.user = user;
+      next();
+    })
+    .catch(err => {
+      console.log(err);
+    });
+});
+
+/*  
 app.use((req, res, next) => {
   User.findById("5de6ad7bafb5db05b6cf3739")
     .then(user => {

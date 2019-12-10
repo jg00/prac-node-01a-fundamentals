@@ -27,8 +27,26 @@ exports.postLogin = (req, res, next) => {
   User.findById("5de6ad7bafb5db05b6cf3739")
     .then(user => {
       req.session.isLoggedIn = true;
-      req.session.user = user; // Mongoose user model object
-      res.redirect("/"); // Important this ends the request cycle and starts a new request.  Therefore the req.isLoggedIn property is no longer available on our new request.
+
+      /*
+        Note 
+        1a This is just the user data stored in our session object.(req.session.user.addToCart is not a function)
+        1b It does not include our user model functions.
+        2 (Important) For every new request, the session middleware does not go ahead
+        and fetch the user with the help of Mongoose.  It fetches the session data
+        from MongoDb and that is correct "but" for that, "it uses the MongoDBStore".
+        -> The MongoDBStore does not know about our Mongoose models.  So when it fetches the data
+        from MongoDB, it only fetches the data.  It does not fetch an object with all the methods
+        provided by Mongoose.
+      */
+      req.session.user = user; // What is stored in the session is just a regular user.
+
+      // To be sure your session is saved to database before redirect use the req.session.save() to safely redirect.
+      req.session.save(() => {
+        res.redirect("/");
+      });
+
+      // res.redirect("/"); // Important this ends the request cycle and starts a new request.  Therefore the req.isLoggedIn property is no longer available on our new request.
     })
     .catch(err => {
       console.log(err);
@@ -61,3 +79,12 @@ exports.getLogin = (req, res, next) => {
   });
 };
 */
+
+exports.postLogout = (req, res, next) => {
+  // console.log("test logout");
+  // All session data will now be lost.
+  req.session.destroy(err => {
+    console.log(err);
+    res.redirect("/login");
+  });
+};

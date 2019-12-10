@@ -22,7 +22,7 @@ exports.postAddProduct = (req, res, next) => {
     price,
     description,
     imageUrl,
-    userId: req.session.user // Conveniently you can just store entire object and mongoose will use the user._id
+    userId: req.user // Conveniently you can just store entire object and mongoose will use the user._id
     // userId: req.user._id
   });
 
@@ -149,7 +149,7 @@ exports.getProducts = (req, res, next) => {
 
     .populate("userId") // Allows you to get the whole user object and not just the userId associated to the product
     .then(products => {
-      console.log("HERE", products);
+      // console.log("HERE", products);
       res.render("admin/products", {
         prods: products,
         pageTitle: "Admin Products",
@@ -165,8 +165,9 @@ exports.getProducts = (req, res, next) => {
 // "Delete" button within "Admin Products" page
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
+  // console.log("DELETE THIS", prodId);
 
-  Product.findOneAndRemove(prodId)
+  Product.findByIdAndRemove(prodId)
     .then(() => {
       console.log("DESTROYED PRODUCT");
       res.redirect("/admin/products");
