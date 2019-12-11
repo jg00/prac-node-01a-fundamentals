@@ -92,20 +92,21 @@ mongoose
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then(result => {
-    // Test user with intialized cart - for now creating user(s) whenever we restart server
-    User.findOne().then(user => {
-      if (!user) {
-        const user = new User({
-          name: "Lisa",
-          email: "lisa@test.com",
-          cart: {
-            items: []
-          }
-        });
-        user.save();
-      }
-    });
-
+    /* Dummy user no longer needed
+      // Test user with intialized cart - for now creating user(s) whenever we restart server
+      User.findOne().then(user => {
+        if (!user) {
+          const user = new User({
+            name: "Lisa",
+            email: "lisa@test.com",
+            cart: {
+              items: []
+            }
+          });
+          user.save();
+        }
+      });
+  */
     app.listen(3000, () => console.log("Server Started"));
   })
   .catch(err => {

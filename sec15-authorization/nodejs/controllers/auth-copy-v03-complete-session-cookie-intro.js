@@ -1,4 +1,3 @@
-const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 
 // Navigation link "Login"
@@ -62,63 +61,6 @@ exports.postLogin = (req, res, next) => {
     });
 };
 
-exports.postSignup = (req, res, next) => {
-  const { email, password, confirmPassword } = req.body;
-
-  User.findOne({ email: email })
-    .then(userDoc => {
-      if (userDoc) {
-        return res.redirect("/signup"); // Remember this return will return a promise and 'will' execute the next .then block.  Note we didnt need a .then since we recirected.
-      }
-
-      return bcrypt
-        .hash(password, 12) // returns a promise
-        .then(hashedPassword => {
-          const user = new User({
-            email: email,
-            password: hashedPassword,
-            cart: { items: [] }
-          });
-
-          return user.save();
-        })
-        .then(result => {
-          res.redirect("login");
-        });
-    })
-    .catch(err => {
-      console.log(err);
-    });
-};
-
-// Chain above
-// .then(hashedPassword => {
-//   const user = new User({
-//     email: email,
-//     password: hashedPassword,
-//     cart: { items: [] }
-//   });
-
-//   return user.save();
-// })
-// .then(result => {
-//   res.redirect("login");
-// })
-
-// .catch(err => {
-//   console.log(err);
-// });
-// };
-
-exports.postLogout = (req, res, next) => {
-  // console.log("test logout");
-  // All session data will now be lost.
-  req.session.destroy(err => {
-    console.log(err);
-    res.redirect("/login");
-  });
-};
-
 /* 1 Related to configuring cookie header
 // Navigation link "Login"
 exports.getLogin = (req, res, next) => {
@@ -145,3 +87,14 @@ exports.getLogin = (req, res, next) => {
   });
 };
 */
+
+exports.postSignup = (req, res, next) => {};
+
+exports.postLogout = (req, res, next) => {
+  // console.log("test logout");
+  // All session data will now be lost.
+  req.session.destroy(err => {
+    console.log(err);
+    res.redirect("/login");
+  });
+};
