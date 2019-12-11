@@ -14,6 +14,14 @@ exports.getLogin = (req, res, next) => {
   });
 };
 
+exports.getSignup = (req, res, next) => {
+  res.render("auth/signup", {
+    path: "/signup",
+    pageTitle: "Signup",
+    isAuthenticated: false
+  });
+};
+
 // Login button on Login page
 exports.postLogin = (req, res, next) => {
   // const { email, password } = req.body;
@@ -79,6 +87,8 @@ exports.getLogin = (req, res, next) => {
   });
 };
 */
+
+exports.postSignup = (req, res, next) => {};
 
 exports.postLogout = (req, res, next) => {
   // console.log("test logout");
