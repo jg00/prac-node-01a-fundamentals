@@ -5,12 +5,15 @@ const app = express();
 const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session); //Returns a single function that takes the session and returns a MongoDBStore class.
+const csrf = require("csurf");
 
 const MONGODB_URI = `mongodb://bart:0BPmJVZdUUrIftYg@cluster0-shard-00-00-f9pzz.mongodb.net:27017,cluster0-shard-00-01-f9pzz.mongodb.net:27017,cluster0-shard-00-02-f9pzz.mongodb.net:27017/shop?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority`;
 const store = new MongoDBStore({
   uri: MONGODB_URI,
   collection: "sessions"
 });
+
+const csrfProtection = csrf(); // returns a middleware function; You can also pass config params.
 
 const errorController = require("./controllers/error");
 const User = require("./models/user");
@@ -35,6 +38,8 @@ app.use(
   })
 );
 
+app.use(csrfProtection); // Any non-GET request your app will now look for CSRF token in your views.
+
 app.use((req, res, next) => {
   if (!req.session.user) {
     return next();
@@ -52,6 +57,13 @@ app.use((req, res, next) => {
     .catch(err => {
       console.log(err);
     });
+});
+
+// Set fields passed to the views.
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn; // Only set in controller/auth.js (postLogin)
+  res.locals.csrfToken = req.csrfToken(); // generates a new token for every request which we can then use in our view.
+  next();
 });
 
 /*  
