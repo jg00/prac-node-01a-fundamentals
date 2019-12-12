@@ -3,6 +3,11 @@ const Product = require("../models/product");
 
 // Navigation link is still "Add Product" but now renders "edit-product.ejs"
 exports.getAddProduct = (req, res, next) => {
+  // Will use middleware to check instead
+  // if (!req.session.isLoggedIn) {
+  //   return res.redirect("/login"); // to get a session
+  // }
+
   res.render("admin/edit-product", {
     pageTitle: "Add Product",
     path: "/admin/add-product", // Note property path value is arbitrary and will be used in our template to control UI features
@@ -105,7 +110,7 @@ exports.postEditProduct = (req, res, next) => {
         (product.description = updatedDescription),
         (product.imageUrl = updatedImageUrl);
 
-      return product.save();
+      return product.save(); // Purpose of the return here will send the data to the next .then else it print out undefined.
     })
     .then(result => {
       // console.log("UPDATED PRODUCT!", result); // A promise 'resolve'

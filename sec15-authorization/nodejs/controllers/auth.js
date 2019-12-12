@@ -30,6 +30,7 @@ exports.postLogin = (req, res, next) => {
     1 Check email exists
     2 Check hashed passwords match
     3 Create/store a session to the database (done via MongoDBStore) and save session id on the clinet
+    4 Note the use of if {} blocks and redirecting to different routes accorginly and how it affects the promises.
   */
 
   User.findOne({ email: email })
@@ -46,14 +47,18 @@ exports.postLogin = (req, res, next) => {
             req.session.isLoggedIn = true;
             req.session.user = user;
 
-            // return to not execution of line res.redirect('/login') after this if block.
+            // Purpose return again is to not execute the of line res.redirect('/login') after this if block.  Again, we purposely did not include a .then.
             return req.session.save(err => {
-              console.log(err);
-              res.redirect("/");
+              // console.log(err);
+              res.redirect("/"); // no need for return because next code will not be reached nor executed.
             });
           }
-          res.redirect("/login");
+          res.redirect("/login"); // no need for return because next code will not be reached nor executed.
         })
+        // Test only - always fires after above .then block
+        // .then(blah => {
+        //   console.log("BLAH");
+        // })
         .catch(err => {
           // Error if bcrypt fails the compare(password, user.password)
           console.log(err);
