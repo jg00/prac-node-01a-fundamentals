@@ -11,15 +11,16 @@ exports.getLogin = (req, res, next) => {
     pageTitle: "Login",
     path: "/login",
     // isAuthenticated: isLoggedIn
-    isAuthenticated: false
+    // isAuthenticated: false
+    errorMessage: req.flash("error") // Retrieves [] of messages and then removes from session behind the scenes.
   });
 };
 
 exports.getSignup = (req, res, next) => {
   res.render("auth/signup", {
     path: "/signup",
-    pageTitle: "Signup",
-    isAuthenticated: false
+    pageTitle: "Signup"
+    // isAuthenticated: false
   });
 };
 
@@ -36,6 +37,10 @@ exports.postLogin = (req, res, next) => {
   User.findOne({ email: email })
     .then(user => {
       if (!user) {
+        // If not user we use connect-flash to flash an error message into our session.
+        // flash(key, message)
+        req.flash("error", "Invalid email or password"); // this will place in the session.  Key feature  of using session-flash is that it will stay there until we use it.
+        // console.log(req.flash("error")); // convenience method returns array [] of messages.
         // return to not execute any code after this if block
         return res.redirect("/login"); // Note a return will always resolve a promise and trigger a .then().  However we intentionally did not add a .then to not fire but just a .catch in case of errors.
       }

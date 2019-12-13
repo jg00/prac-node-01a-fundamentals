@@ -12,8 +12,8 @@ exports.getAddProduct = (req, res, next) => {
     pageTitle: "Add Product",
     path: "/admin/add-product", // Note property path value is arbitrary and will be used in our template to control UI features
     editing: false,
-    product: "", // Fix for when clicking on Add Product
-    isAuthenticated: req.session.isLoggedIn
+    product: "" // Fix for when clicking on Add Product
+    // isAuthenticated: req.session.isLoggedIn
   });
 };
 
@@ -68,8 +68,8 @@ exports.getEditProduct = (req, res, next) => {
         pageTitle: "Edit Product",
         path: "/admin/edit-product", // Here we do not want any navigation link highlighted.
         editing: editMode,
-        product: product,
-        isAuthenticated: req.session.isLoggedIn
+        product: product
+        // isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch(err => {
@@ -158,8 +158,8 @@ exports.getProducts = (req, res, next) => {
       res.render("admin/products", {
         prods: products,
         pageTitle: "Admin Products",
-        path: "/admin/products",
-        isAuthenticated: req.session.isLoggedIn
+        path: "/admin/products"
+        // isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch(err => {

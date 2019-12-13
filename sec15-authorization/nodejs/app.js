@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session); //Returns a single function that takes the session and returns a MongoDBStore class.
 const csrf = require("csurf");
+const flash = require("connect-flash");
 
 const MONGODB_URI = `mongodb://bart:0BPmJVZdUUrIftYg@cluster0-shard-00-00-f9pzz.mongodb.net:27017,cluster0-shard-00-01-f9pzz.mongodb.net:27017,cluster0-shard-00-02-f9pzz.mongodb.net:27017/shop?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority`;
 const store = new MongoDBStore({
@@ -39,6 +40,7 @@ app.use(
 );
 
 app.use(csrfProtection); // Any non-GET request your app will now look for CSRF token in your views.
+app.use(flash());
 
 app.use((req, res, next) => {
   if (!req.session.user) {
