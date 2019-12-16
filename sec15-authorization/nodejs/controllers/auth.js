@@ -7,20 +7,39 @@ exports.getLogin = (req, res, next) => {
   // console.log(req.session);
   // console.log(req.session.isLoggedIn); // Important - .isLoggedIn key is stored on the server
 
+  // console.log(req.flash("error")); // [ 'Invalid email or password' ]
+
+  let message = req.flash("error");
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
+
   res.render("auth/login", {
     pageTitle: "Login",
     path: "/login",
     // isAuthenticated: isLoggedIn
     // isAuthenticated: false
-    errorMessage: req.flash("error") // Retrieves [] of messages and then removes from session behind the scenes.
+
+    // errorMessage: req.flash("error") // Retrieves [] of messages and then removes from session behind the scenes.
+    errorMessage: message // Retrieves [] of messages and then removes from session behind the scenes.
   });
 };
 
 exports.getSignup = (req, res, next) => {
+  let message = req.flash("error");
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
+
   res.render("auth/signup", {
     path: "/signup",
-    pageTitle: "Signup"
+    pageTitle: "Signup",
     // isAuthenticated: false
+    errorMessage: message
   });
 };
 
@@ -58,6 +77,8 @@ exports.postLogin = (req, res, next) => {
               res.redirect("/"); // no need for return because next code will not be reached nor executed.
             });
           }
+
+          req.flash("error", "Invalid email or password");
           res.redirect("/login"); // no need for return because next code will not be reached nor executed.
         })
         // Test only - always fires after above .then block
@@ -119,6 +140,7 @@ exports.postSignup = (req, res, next) => {
   User.findOne({ email: email })
     .then(userDoc => {
       if (userDoc) {
+        req.flash("error", "Email exists. Create a different email.");
         return res.redirect("/signup"); // Remember this return will return a promise and 'will' execute the next .then block.  Note we didnt need a .then since we recirected.
       }
 
