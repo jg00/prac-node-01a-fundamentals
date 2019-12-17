@@ -1,6 +1,39 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 
+const nodemailer = require("nodemailer");
+// const sendgridTransport = require('nodemailer-sendgrid-transport') // ref only if using
+const testMailing = require("../util/mailingstuff");
+
+const transporter = nodemailer.createTransport(
+  smtpTransport({
+    service: "",
+    host: "",
+    // port: 25, // 465,
+    // secure: false, // use SSL,
+    // you can try with TLS, but port is then 587
+    auth: {
+      user: "",
+      password: ""
+    }
+    // tls: {
+    //   rejectUnauthorized: false
+    // }
+  })
+);
+
+// Ref only - set up SendGrid email service
+/* 
+  const transporter = nodemailer.createTransport(
+    sendgridTransport({
+      auth: {
+        api_user: "optional",
+        api_key: "required"
+      }
+    })
+  );
+ */
+
 // Navigation link "Login"
 exports.getLogin = (req, res, next) => {
   // 2 Related to session.
@@ -158,7 +191,20 @@ exports.postSignup = (req, res, next) => {
           return user.save();
         })
         .then(result => {
-          res.redirect("login");
+          // Redirecting immediately is fine because we are not relying on the email being sent.
+          res.redirect("/login");
+
+          // Send sign up email confirmation.  sendMail() returns a promise.  You can return so you can still catch any errors.
+          return transporter.sendMail({
+            from: "shop@test.test",
+            to: email,
+            subject: "Signup succeeded!",
+            text: "Signed up",
+            html: "<h1>You successfully signed up!</h1>"
+          });
+        })
+        .catch(err => {
+          console.log(err);
         });
     })
     .catch(err => {
