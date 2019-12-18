@@ -26,6 +26,9 @@ const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
 
+// console.log("SENDGRID:", process.env.SENDGRID_API_KEY);
+// console.log("NODE_ENV:", process.env.NODE_ENV);
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 

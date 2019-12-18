@@ -1,9 +1,12 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+/* Ref only.  Now using  @sendgrid/mail package only.
 const nodemailer = require("nodemailer");
-// const sendgridTransport = require('nodemailer-sendgrid-transport') // ref only if using
-const testMailing = require("../util/mailingstuff");
+const sendgridTransport = require('nodemailer-sendgrid-transport') // deprecated
 
 const transporter = nodemailer.createTransport(
   smtpTransport({
@@ -20,7 +23,7 @@ const transporter = nodemailer.createTransport(
     //   rejectUnauthorized: false
     // }
   })
-);
+);*/
 
 // Ref only - set up SendGrid email service
 /* 
@@ -194,14 +197,15 @@ exports.postSignup = (req, res, next) => {
           // Redirecting immediately is fine because we are not relying on the email being sent.
           res.redirect("/login");
 
-          // Send sign up email confirmation.  sendMail() returns a promise.  You can return so you can still catch any errors.
-          return transporter.sendMail({
-            from: "shop@test.test",
+          const msg = {
             to: email,
+            from: "shop@test.com",
             subject: "Signup succeeded!",
-            text: "Signed up",
+            text: "Log in to continue.",
             html: "<h1>You successfully signed up!</h1>"
-          });
+          };
+
+          return sgMail.send(msg);
         })
         .catch(err => {
           console.log(err);
@@ -211,25 +215,6 @@ exports.postSignup = (req, res, next) => {
       console.log(err);
     });
 };
-
-// Nested after the .hash() above
-// .then(hashedPassword => {
-//   const user = new User({
-//     email: email,
-//     password: hashedPassword,
-//     cart: { items: [] }
-//   });
-
-//   return user.save();
-// })
-// .then(result => {
-//   res.redirect("login");
-// })
-
-// .catch(err => {
-//   console.log(err);
-// });
-// };
 
 exports.postLogout = (req, res, next) => {
   // console.log("test logout");

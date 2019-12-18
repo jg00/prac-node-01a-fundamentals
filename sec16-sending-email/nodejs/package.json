@@ -5,15 +5,18 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js",
-    "start-server": "node app.js"
+    "start": "node app.js",
+    "start-server": "node app.js",
+    "start-local": "nodemon -r dotenv/config app.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "dotenv": "^8.2.0",
     "nodemon": "^1.19.1"
   },
   "dependencies": {
+    "@sendgrid/mail": "^6.4.0",
     "bcryptjs": "^2.4.3",
     "connect-flash": "^0.1.1",
     "connect-mongodb-session": "^2.2.0",
