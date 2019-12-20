@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 const User = require("../models/user");
 
 const sgMail = require("@sendgrid/mail");
@@ -92,7 +93,7 @@ exports.postLogin = (req, res, next) => {
   User.findOne({ email: email })
     .then(user => {
       if (!user) {
-        // If not user we use connect-flash to flash an error message into our session.
+        // If no user we use connect-flash to flash an error message into our session.
         // flash(key, message)
         req.flash("error", "Invalid email or password"); // this will place in the session.  Key feature  of using session-flash is that it will stay there until we use it.
         // console.log(req.flash("error")); // convenience method returns array [] of messages.
@@ -181,36 +182,47 @@ exports.postSignup = (req, res, next) => {
       }
 
       // Only executed if we make it to the hashing step below (ie no user document found)
-      return bcrypt
-        .hash(password, 12) // returns a promise
-        .then(hashedPassword => {
-          // Remember that in our User Mongoose Schema user and email are required (May be good place for validation)
-          const user = new User({
-            email: email,
-            password: hashedPassword,
-            cart: { items: [] }
-          });
+      return (
+        bcrypt
+          .hash(password, 12) // returns a promise
+          .then(hashedPassword => {
+            // Remember that in our User Mongoose Schema user and email are required (May be good place for validation)
+            const user = new User({
+              email: email,
+              password: hashedPassword,
+              cart: { items: [] }
+            });
 
-          return user.save();
-        })
-        .then(result => {
-          // Redirecting immediately is fine because we are not relying on the email being sent.
-          res.redirect("/login");
+            return user.save();
+          })
+          .then(result => {
+            // Redirecting immediately is fine because we are not relying on the email being sent.
+            res.redirect("/login");
 
-          const msg = {
-            to: email,
-            from: "ShopNode@test.com",
-            subject: "Signup succeeded!",
-            text: "Log in to continue.",
-            html: "<h1>You successfully signed up!</h1>"
-          };
+            const msg = {
+              to: email,
+              from: "ShopNode@test.com",
+              subject: "Signup succeeded!",
+              text: "Log in to continue.",
+              html: "<h1>You successfully signed up!</h1>"
+            };
 
-          return sgMail.send(msg);
-        })
-        .catch(err => {
-          console.log(err);
-        });
+            return sgMail.send(msg);
+          })
+          // Prints out the reuslt of the return sgMail.send(msg)
+          // .then(emailMessage => {
+          //   console.log("EMAIL", emailMessage);
+          // })
+          .catch(err => {
+            console.log(err);
+          })
+        // , { test: "Test pass data along with bcrypt" }
+      );
     })
+    // For return res.redirect or the res.bcrypt
+    // .then(result => {
+    //   console.log("CHECK IF RAN?", result);
+    // })
     .catch(err => {
       console.log(err);
     });
@@ -251,3 +263,85 @@ exports.getLogin = (req, res, next) => {
   });
 };
 */
+
+exports.getReset = (req, res, next) => {
+  let message = req.flash("error");
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
+
+  res.render("auth/reset", {
+    path: "/reset",
+    pageTitle: "Reset Password",
+    errorMessage: message
+  });
+};
+
+exports.postReset = (req, res, next) => {
+  // randomBytes() returns a Buffer that contain Hexadecimal values
+  crypto.randomBytes(32, (err, buffer) => {
+    if (err) {
+      console.log(err);
+      return res.redirect("/reset");
+    }
+
+    // We can generate a token from that buffer that contains hexadecimal values.
+    const token = buffer.toString("hex"); // "hex" is information toString() needs to convert hexadecimal values to string
+
+    // Store token in database as part of the user object
+    // Note at this point user is not logged in yet and therefore no user session yet.
+    User.findOne({ email: req.body.email })
+      .then(user => {
+        if (!user) {
+          req.flash("error", "No account with that email found.");
+          return res.redirect("/reset");
+        }
+
+        user.resetToken = token;
+        user.resetTokenExpiration = Date.now() + 3600000; // 3,600,000 Expressed in milliseconds for 1hr
+
+        return user.save().then(result => {
+          console.log("DOES THIS STILL RUN A?");
+          res.redirect("/");
+          console.log("DOES THIS STILL RUN B?");
+
+          const msg = {
+            to: req.body.email,
+            from: "ShopNode@test.com",
+            subject: "Password reset",
+            html: `
+            <p>You requested a password reset</p>
+            <p>Click this <a href="http://localhost:3000/reset/${token}">link</a> to set a new password.</p>
+            `
+          };
+
+          sgMail.send(msg);
+        });
+      })
+
+      // FIXED ABOVE
+      // .then(result => {
+      //   console.log("DOES THIS STILL RUN A?");
+      //   res.redirect("/");
+      //   console.log("DOES THIS STILL RUN B?");
+
+      //   const msg = {
+      //     to: req.body.email,
+      //     from: "ShopNode@test.com",
+      //     subject: "Password reset",
+      //     html: `
+      //     <p>You requested a password reset</p>
+      //     <p>Click this <a href="http://localhost:3000/reset/${token}">link</a> to set a new password.</p>
+      //     `
+      //   };
+
+      //   sgMail.send(msg);
+      // })
+
+      .catch(err => {
+        console.log(err);
+      });
+  });
+};
