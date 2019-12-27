@@ -346,7 +346,7 @@ exports.postReset = (req, res, next) => {
   });
 };
 
-// Link from email with token
+// Link from email with token; Only render auth/new-password if user with token (not expired) found.
 exports.getNewPassword = (req, res, next) => {
   const token = req.params.token;
 
@@ -366,10 +366,39 @@ exports.getNewPassword = (req, res, next) => {
         path: "/new-password",
         pageTitle: "New Password",
         errorMessage: message,
-        userId: user._id.toString()
+        userId: user._id.toString(),
+        passwordToken: token
       });
     })
     .catch(err => {
       console.log(err);
     });
+};
+
+exports.postNewPassword = (req, res, next) => {
+  const { userId, passwordToken, password: newPassword } = req.body;
+
+  console.log(userId, passwordToken, newPassword);
+
+  let resetUser;
+
+  User.findOne({
+    resetToken: passwordToken,
+    resetTokenExpiration: { $gt: Date.now() },
+    _id: userId
+  })
+    .then(user => {
+      resetUser = user;
+      return bcrypt.hash(newPassword, 12);
+    })
+    .then(hashedPassword => {
+      resetUser.password = hashedPassword;
+      resetUser.resetToken = undefined;
+      resetUser.resetTokenExpiration = undefined;
+      return resetUser.save();
+    })
+    .then(result => {
+      res.redirect("/login");
+    })
+    .catch(err => console.log(err));
 };

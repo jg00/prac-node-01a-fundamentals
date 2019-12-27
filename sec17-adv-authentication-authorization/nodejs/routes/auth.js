@@ -19,4 +19,6 @@ router.post("/reset", authController.postReset);
 
 router.get("/reset/:token", authController.getNewPassword); // Link from email with token
 
+router.post("/new-password", authController.postNewPassword);
+
 module.exports = router;
