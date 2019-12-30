@@ -105,17 +105,26 @@ exports.postEditProduct = (req, res, next) => {
 
   Product.findById(prodId)
     .then(product => {
+      if (product.userId.toString() !== req.user._id.toString()) {
+        return res.redirect("/");
+      }
       (product.title = updatedTitle),
         (product.price = updatedPrice),
         (product.description = updatedDescription),
         (product.imageUrl = updatedImageUrl);
 
-      return product.save(); // Purpose of the return here will send the data to the next .then else it print out undefined.
+      return product
+        .save() // Purpose of the return here will send the data to the next .then else it print out undefined.
+        .then(result => {
+          // console.log("UPDATED PRODUCT!", result); // A promise 'resolve'
+          res.redirect("/admin/products");
+        });
     })
-    .then(result => {
-      // console.log("UPDATED PRODUCT!", result); // A promise 'resolve'
-      res.redirect("/admin/products");
-    })
+    // Commented out because the first return res.redirect('/') will still execute the next .then block
+    // .then(result => {
+    //   // console.log("UPDATED PRODUCT!", result); // A promise 'resolve'
+    //   res.redirect("/admin/products");
+    // })
     .catch(err => {
       console.log(err);
     });
@@ -146,9 +155,11 @@ exports.getProducts = (req, res, next) => {
   // Product.find().cursor().next() <- .find() for mongoose does not return a cursor however you could still get it
   // Product.find().cursor().eachAsync()  <- allow you to loop through the cursor
 
-  // Note the .select() and .populate() for data fetching with mongoose.
-  Product.find()
+  console.log("HERE", req.user);
 
+  // Note the .select() and .populate() for data fetching with mongoose.
+  // Product.find()
+  Product.find({ userId: req.user._id })
     // .select("title price -_id") // You can specify fields to return and exclude
     // .populate("userId", "name") // Allows you to get the whole user object and not just the userId associated to the product
 
@@ -172,7 +183,8 @@ exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
   // console.log("DELETE THIS", prodId);
 
-  Product.findByIdAndRemove(prodId)
+  // Product.findByIdAndRemove(prodId)
+  Product.deleteOne({ _id: prodId, userId: req.user._id })
     .then(() => {
       console.log("DESTROYED PRODUCT");
       res.redirect("/admin/products");

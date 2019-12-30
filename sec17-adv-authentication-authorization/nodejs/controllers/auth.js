@@ -41,8 +41,8 @@ const transporter = nodemailer.createTransport(
 // Navigation link "Login"
 exports.getLogin = (req, res, next) => {
   // 2 Related to session.
-  // console.log(req.session);
-  // console.log(req.session.isLoggedIn); // Important - .isLoggedIn key is stored on the server
+  console.log(req.session);
+  console.log(req.session.isLoggedIn); // Important - .isLoggedIn key is stored on the server
 
   // console.log(req.flash("error")); // [ 'Invalid email or password' ]
 
@@ -378,7 +378,7 @@ exports.getNewPassword = (req, res, next) => {
 exports.postNewPassword = (req, res, next) => {
   const { userId, passwordToken, password: newPassword } = req.body;
 
-  console.log(userId, passwordToken, newPassword);
+  // console.log(userId, passwordToken, newPassword);
 
   let resetUser;
 
