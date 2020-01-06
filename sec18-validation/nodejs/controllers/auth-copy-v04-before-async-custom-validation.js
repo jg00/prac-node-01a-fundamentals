@@ -188,111 +188,59 @@ exports.postSignup = (req, res, next) => {
     });
   }
 
-  // We no longer validate if email exists in the controller.  We moved the async validation
-  // in the controller.
+  User.findOne({ email: email })
+    .then(userDoc => {
+      if (userDoc) {
+        req.flash("error", "Email exists. Create a different email.");
+        return res.redirect("/signup"); // Remember this return will return a promise and 'will' execute the next .then block.  Note we didnt need a .then since we recirected.
+      }
 
-  // Only executed if we make it to the hashing step below (ie no user document found)
+      // Only executed if we make it to the hashing step below (ie no user document found)
+      return (
+        bcrypt
+          .hash(password, 12) // returns a promise
+          .then(hashedPassword => {
+            // Remember that in our User Mongoose Schema user and email are required (May be good place for validation)
+            const user = new User({
+              email: email,
+              password: hashedPassword,
+              cart: { items: [] }
+            });
 
-  bcrypt
-    .hash(password, 12) // returns a promise
-    .then(hashedPassword => {
-      // Remember that in our User Mongoose Schema user and email are required (May be good place for validation)
-      const user = new User({
-        email: email,
-        password: hashedPassword,
-        cart: { items: [] }
-      });
-      return user.save();
+            return user.save();
+          })
+          .then(result => {
+            // Redirecting immediately is fine because we are not relying on the email being sent.
+            res.redirect("/login");
+
+            const msg = {
+              to: email,
+              from: "ShopNode@test.com",
+              subject: "Signup succeeded!",
+              text: "Log in to continue.",
+              html: "<h1>You successfully signed up!</h1>"
+            };
+
+            return sgMail.send(msg);
+          })
+          // Prints out the reuslt of the return sgMail.send(msg)
+          // .then(emailMessage => {
+          //   console.log("EMAIL", emailMessage);
+          // })
+          .catch(err => {
+            console.log(err);
+          })
+        // , { test: "Test pass data along with bcrypt" }
+      );
     })
-    .then(result => {
-      // Redirecting immediately is fine because we are not relying on the email being sent.
-      res.redirect("/login");
-
-      const msg = {
-        to: email,
-        from: "ShopNode@test.com",
-        subject: "Signup succeeded!",
-        text: "Log in to continue.",
-        html: "<h1>You successfully signed up!</h1>"
-      };
-
-      return sgMail.send(msg);
-    })
+    // For return res.redirect or the res.bcrypt
+    // .then(result => {
+    //   console.log("CHECK IF RAN?", result);
+    // })
     .catch(err => {
       console.log(err);
     });
 };
-
-// Good reference only before moving async code to find if email already exists to routes/auth as part of our validation.
-// exports.postSignup = (req, res, next) => {
-//   const { email, password } = req.body;
-
-//   // Related to express-validator
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     console.log(errors.array());
-//     return res.status(422).render("auth/signup", {
-//       path: "/signup",
-//       pageTitle: "Signup",
-//       // isAuthenticated: false
-//       // errorMessage: message // Retrieves [] of messages and then removes from session behind the scenes.
-//       errorMessage: errors.array()[0].msg
-//     });
-//   }
-
-//   User.findOne({ email: email })
-//     .then(userDoc => {
-//       if (userDoc) {
-//         req.flash("error", "Email exists. Create a different email.");
-//         return res.redirect("/signup"); // Remember this return will return a promise and 'will' execute the next .then block.  Note we didnt need a .then since we recirected.
-//       }
-
-//       // Only executed if we make it to the hashing step below (ie no user document found)
-//       return (
-//         bcrypt
-//           .hash(password, 12) // returns a promise
-//           .then(hashedPassword => {
-//             // Remember that in our User Mongoose Schema user and email are required (May be good place for validation)
-//             const user = new User({
-//               email: email,
-//               password: hashedPassword,
-//               cart: { items: [] }
-//             });
-
-//             return user.save();
-//           })
-//           .then(result => {
-//             // Redirecting immediately is fine because we are not relying on the email being sent.
-//             res.redirect("/login");
-
-//             const msg = {
-//               to: email,
-//               from: "ShopNode@test.com",
-//               subject: "Signup succeeded!",
-//               text: "Log in to continue.",
-//               html: "<h1>You successfully signed up!</h1>"
-//             };
-
-//             return sgMail.send(msg);
-//           })
-//           // Prints out the reuslt of the return sgMail.send(msg)
-//           // .then(emailMessage => {
-//           //   console.log("EMAIL", emailMessage);
-//           // })
-//           .catch(err => {
-//             console.log(err);
-//           })
-//         // , { test: "Test pass data along with bcrypt" }
-//       );
-//     })
-//     // For return res.redirect or the res.bcrypt
-//     // .then(result => {
-//     //   console.log("CHECK IF RAN?", result);
-//     // })
-//     .catch(err => {
-//       console.log(err);
-//     });
-// };
 
 exports.postLogout = (req, res, next) => {
   // console.log("test logout");

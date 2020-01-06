@@ -11,7 +11,7 @@ const flash = require("connect-flash");
 const MONGODB_URI = `mongodb://bart:0BPmJVZdUUrIftYg@cluster0-shard-00-00-f9pzz.mongodb.net:27017,cluster0-shard-00-01-f9pzz.mongodb.net:27017,cluster0-shard-00-02-f9pzz.mongodb.net:27017/shop?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority`;
 const store = new MongoDBStore({
   uri: MONGODB_URI,
-  collection: "sessions"
+  collection: "sessions" // overrides shop collection specified in the MONGODB_URI
 });
 
 const csrfProtection = csrf(); // returns a middleware function; You can also pass config params.
@@ -43,7 +43,7 @@ app.use(
 );
 
 app.use(csrfProtection); // Any non-GET request your app will now look for CSRF token in your views.
-app.use(flash());
+app.use(flash()); // Now all requests will have a req.flash() function that can be used for flash messages.
 
 app.use((req, res, next) => {
   if (!req.session.user) {
