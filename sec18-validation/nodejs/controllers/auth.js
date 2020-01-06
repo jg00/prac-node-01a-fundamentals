@@ -84,6 +84,17 @@ exports.getSignup = (req, res, next) => {
 // Login button on Login page
 exports.postLogin = (req, res, next) => {
   const { email, password } = req.body;
+
+  const errors = validationResult(req);
+  // console.log("HERE", errors.errors);
+  if (errors.errors.length > 0) {
+    return res.status(422).render("auth/login", {
+      pageTitle: "Login",
+      path: "/login",
+      errorMessage: errors.errors[0].msg
+    });
+  }
+
   /*
     1 Check email exists
     2 Check hashed passwords match
