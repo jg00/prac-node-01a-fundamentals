@@ -1,5 +1,6 @@
 // const mongodb = require("mongodb");
 const Product = require("../models/product");
+const { validationResult } = require("express-validator");
 
 // Navigation link is still "Add Product" but now renders "edit-product.ejs"
 exports.getAddProduct = (req, res, next) => {
@@ -12,14 +13,38 @@ exports.getAddProduct = (req, res, next) => {
     pageTitle: "Add Product",
     path: "/admin/add-product", // Note property path value is arbitrary and will be used in our template to control UI features
     editing: false,
-    product: "" // Fix for when clicking on Add Product
+    hasError: false, // additional check to display form input values
+    product: "", // Fix for when clicking on Add Product
     // isAuthenticated: req.session.isLoggedIn
+    errorMessage: null // Display error feedback
+
+    // validationErrors: [] // full [] array of errros
   });
 };
 
 // "Add Product" button within "Add Product" page form
 exports.postAddProduct = (req, res, next) => {
   const { title, imageUrl, price, description } = req.body;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors.array());
+    return res.status(422).render("admin/edit-product", {
+      pageTitle: "Add Product",
+      path: "/admin/edit-product",
+      editing: false,
+      hasError: true, // Additional check to display form input values
+      errorMessage: errors.array()[0].msg, // Display error feedback
+      product: {
+        title: title,
+        imageUrl: imageUrl,
+        price: price,
+        description: description
+      }
+
+      // validationErrors: errors.array() // full [] array of errros
+    });
+  }
 
   // Now we a Product model managed by Mongoose. Mongoose models comes with functions we can use.
   const product = new Product({
@@ -68,6 +93,8 @@ exports.getEditProduct = (req, res, next) => {
         pageTitle: "Edit Product",
         path: "/admin/edit-product", // Here we do not want any navigation link highlighted.
         editing: editMode,
+        hasError: false, // additional check to display form input values
+        errorMessage: null, // Display error feedback
         product: product
         // isAuthenticated: req.session.isLoggedIn
       });
@@ -155,7 +182,7 @@ exports.getProducts = (req, res, next) => {
   // Product.find().cursor().next() <- .find() for mongoose does not return a cursor however you could still get it
   // Product.find().cursor().eachAsync()  <- allow you to loop through the cursor
 
-  console.log("HERE", req.user);
+  // console.log("HERE", req.user);
 
   // Note the .select() and .populate() for data fetching with mongoose.
   // Product.find()
