@@ -61,7 +61,9 @@ exports.getLogin = (req, res, next) => {
     // isAuthenticated: false
 
     // errorMessage: req.flash("error") // Retrieves [] of messages and then removes from session behind the scenes.
-    errorMessage: message // Retrieves [] of messages and then removes from session behind the scenes.
+    errorMessage: message, // Retrieves [] of messages and then removes from session behind the scenes.
+    oldInput: { email: "", password: "" },
+    validationErrors: []
   });
 };
 
@@ -77,7 +79,13 @@ exports.getSignup = (req, res, next) => {
     path: "/signup",
     pageTitle: "Signup",
     // isAuthenticated: false
-    errorMessage: message
+    errorMessage: message,
+    oldInput: {
+      email: "",
+      password: "",
+      confirmPassword: ""
+    },
+    validationErrors: [] // initialize [] array of errros
   });
 };
 
@@ -85,13 +93,15 @@ exports.getSignup = (req, res, next) => {
 exports.postLogin = (req, res, next) => {
   const { email, password } = req.body;
 
-  const errors = validationResult(req);
+  const errors = validationResult(req); // returns [] of erros
   // console.log("HERE", errors.errors);
   if (errors.errors.length > 0) {
     return res.status(422).render("auth/login", {
       pageTitle: "Login",
       path: "/login",
-      errorMessage: errors.errors[0].msg
+      errorMessage: errors.errors[0].msg,
+      oldInput: { email: email, password: password },
+      validationErrors: errors.array()
     });
   }
 
@@ -107,10 +117,24 @@ exports.postLogin = (req, res, next) => {
       if (!user) {
         // If no user we use connect-flash to flash an error message into our session.
         // flash(key, message)
-        req.flash("error", "Invalid email or password"); // Adds flash object into the current session.  Key feature of using session-flash is that it will stay there until we use it.
+
+        // No longer needed since we are no longer redirectin but instead rendering "auth/login" with status 422
+        // req.flash("error", "Invalid email or password"); // Adds flash object into the current session.  Key feature of using session-flash is that it will stay there until we use it.
+
         // console.log(req.flash("error")); // convenience method returns array [] of messages.
         // return to not execute any code after this if block
-        return res.redirect("/login"); // Note a return only jumps us out of this function.  A promise will still be resolved because we are in a .then block and it will always trigger a .then().  However we intentionally did not add a .then to not fire but just a .catch in case of errors.
+
+        // Instead of redirecting sending status 422
+        // return res.redirect("/login"); // Note a return only jumps us out of this function.  A promise will still be resolved because we are in a .then block and it will always trigger a .then().  However we intentionally did not add a .then to not fire but just a .catch in case of errors.
+
+        return res.status(422).render("auth/login", {
+          path: "/login",
+          pageTitle: "Login",
+          errorMessage: "Invalid email or password",
+          // errorMessage: errors.errors[0].msg, No longer needed since we are not flashing
+          oldInput: { email: email, password: password },
+          validationErrors: [] // Left as [] simply so we intentionally do not inform user of the error
+        });
       }
 
       bcrypt
@@ -127,8 +151,18 @@ exports.postLogin = (req, res, next) => {
             });
           }
 
-          req.flash("error", "Invalid email or password");
-          res.redirect("/login"); // no need for return because next code will not be reached nor executed.
+          // replaced with render "auth/login" with status 422
+          // req.flash("error", "Invalid email or password");
+          // res.redirect("/login"); // no need for return because next code will not be reached nor executed.
+
+          return res.status(422).render("auth/login", {
+            path: "/login",
+            pageTitle: "Login",
+            errorMessage: "Invalid email or password",
+            // errorMessage: errors.errors[0].msg, No longer needed since we are not flashing
+            oldInput: { email: email, password: password },
+            validationErrors: [] // Left as [] simply so we intentionally do not inform user of the error
+          });
         })
         // Test only - always fires after above .then block
         // .then(blah => {
@@ -184,7 +218,7 @@ exports.postLogin = (req, res, next) => {
 // };
 
 exports.postSignup = (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, confirmPassword } = req.body;
 
   // Related to express-validator
   const errors = validationResult(req);
@@ -195,7 +229,13 @@ exports.postSignup = (req, res, next) => {
       pageTitle: "Signup",
       // isAuthenticated: false
       // errorMessage: message // Retrieves [] of messages and then removes from session behind the scenes.
-      errorMessage: errors.array()[0].msg
+      errorMessage: errors.array()[0].msg,
+      oldInput: {
+        email: email,
+        password: password,
+        confirmPassword: confirmPassword
+      },
+      validationErrors: errors.array() // full [] array of errros
     });
   }
 

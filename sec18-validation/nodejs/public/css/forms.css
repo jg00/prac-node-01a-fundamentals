@@ -21,3 +21,7 @@
 .form-control textarea:forcus {
   outline-color: #00695c;
 }
+
+.form-control input.invalid {
+  border: 1px solid red;
+}

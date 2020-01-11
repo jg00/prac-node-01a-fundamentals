@@ -16,7 +16,8 @@ router.post(
   [
     body("email")
       .isEmail()
-      .withMessage("Enter valid email."),
+      .withMessage("Enter valid email.")
+      .normalizeEmail(), // Sanitizer
 
     body(
       "password",
@@ -24,6 +25,7 @@ router.post(
     )
       .isLength({ min: 5 })
       .isAlphanumeric()
+      .trim() // Sanitizer
   ],
 
   authController.postLogin
@@ -55,21 +57,24 @@ router.post(
           // Remember that every .then block implicitly returns a new Promise.
           // If the code execution reaches this line of code after the if() block above, it is assumed that a Promise.resolve occured and is returned.
         });
-      }),
-
+      })
+      .normalizeEmail(), // Sanitizer
     body(
       "password",
       "Please enter a password with only numbers and text and at least 5 characters."
     ) // Adds a custom default message
       .isLength({ min: 5 })
-      .isAlphanumeric(),
+      .isAlphanumeric()
+      .trim(), // Sanitizer
 
-    body("confirmPassword").custom((value, { req }) => {
-      if (value !== req.body.password) {
-        throw new Error("Passwords have to match!");
-      }
-      return true;
-    })
+    body("confirmPassword")
+      .trim()
+      .custom((value, { req }) => {
+        if (value !== req.body.password) {
+          throw new Error("Passwords have to match!");
+        }
+        return true;
+      })
   ],
 
   authController.postSignup
