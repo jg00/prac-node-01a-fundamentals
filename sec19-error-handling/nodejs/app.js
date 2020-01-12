@@ -56,11 +56,21 @@ app.use((req, res, next) => {
   User.findById(req.session.user._id)
     .then(user => {
       // console.log("MONGOOSE MODEL USER", user);
+
+      // Extra check and handling if we do not find a user
+      if (!user) {
+        return next();
+      }
+
       req.user = user;
       next();
     })
     .catch(err => {
-      console.log(err);
+      // console.log(err); // Note that not finding a user does not make this catch block fire.  It should fire on technical issues.
+
+      // Throw error if we have some technical issue. There is a significat advantage of throwing the error here.
+      // Expressjs gives us a way of handling these errors.
+      throw new Error(err);
     });
 });
 

@@ -37,7 +37,6 @@ router.post(
     check("email")
       .isEmail()
       .withMessage("Please enter a valid email.") // Optional custom message
-
       // Note that .custom is looking for a returned true/false, a thrown error, or to return a Promise
       .custom((value, { req }) => {
         // // Custom validation function
@@ -59,6 +58,7 @@ router.post(
         });
       })
       .normalizeEmail(), // Sanitizer
+
     body(
       "password",
       "Please enter a password with only numbers and text and at least 5 characters."
