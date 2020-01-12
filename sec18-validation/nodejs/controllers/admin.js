@@ -16,9 +16,8 @@ exports.getAddProduct = (req, res, next) => {
     hasError: false, // additional check to display form input values
     product: "", // Fix for when clicking on Add Product
     // isAuthenticated: req.session.isLoggedIn
-    errorMessage: null // Display error feedback
-
-    // validationErrors: [] // full [] array of errros
+    errorMessage: null, // Display error feedback
+    validationErrors: [] // full [] array of errors
   });
 };
 
@@ -40,9 +39,8 @@ exports.postAddProduct = (req, res, next) => {
         imageUrl: imageUrl,
         price: price,
         description: description
-      }
-
-      // validationErrors: errors.array() // full [] array of errros
+      },
+      validationErrors: errors.array() // full [] array of errors
     });
   }
 
@@ -95,7 +93,8 @@ exports.getEditProduct = (req, res, next) => {
         editing: editMode,
         hasError: false, // additional check to display form input values
         errorMessage: null, // Display error feedback
-        product: product
+        product: product,
+        validationErrors: [] // full [] array of errors
         // isAuthenticated: req.session.isLoggedIn
       });
     })
@@ -121,6 +120,26 @@ exports.postEditProduct = (req, res, next) => {
     description: updatedDescription,
     price: updatedPrice
   } = req.body;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log("Editing errors:", errors.array());
+    return res.status(422).render("admin/edit-product", {
+      pageTitle: "Edit Product",
+      path: "/admin/edit-product",
+      editing: true,
+      hasError: true, // Additional check to display form input values
+      errorMessage: errors.array()[0].msg, // Display error feedback
+      product: {
+        title: updatedTitle,
+        imageUrl: updatedImageUrl,
+        price: updatedPrice,
+        description: updatedDescription,
+        _id: prodId
+      },
+      validationErrors: errors.array() // full [] array of errors
+    });
+  }
 
   /*
     With mongoose instead of creating a new product:

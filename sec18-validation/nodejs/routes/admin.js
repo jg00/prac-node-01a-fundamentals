@@ -45,7 +45,7 @@ router.post(
 
   [
     check("title")
-      .isAlphanumeric()
+      .isString()
       .isLength({ min: 3 })
       .trim(),
 
