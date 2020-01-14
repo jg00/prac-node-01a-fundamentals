@@ -108,7 +108,17 @@ app.use("/favicon.ico", (req, res, next) => {
   res.status(204).end();
 });
 
-app.use(errorController.get404);
+app.get("/500", errorController.get500); // We could use to redirect to get error page
+
+app.use(errorController.get404); // Catch all middleware if no page found
+
+// Called from async code .catch((err) => return next(err)); Normally never reach this route.
+// Express is smart enough to detech this signature and will move right away to this route if next(error) is executed.
+// This is like a central Express Error Handling Middleware
+app.use((error, req, res, next) => {
+  // res.status(error.httpStatusCode).render(..) // Status can be added here if you were to render() a 500 page.  This is just to show you can pass additional information.
+  res.redirect("/500");
+});
 
 // Accomodate for deprecated functions like Product.findeOneAndRemove()
 mongoose.set("useFindAndModify", false);

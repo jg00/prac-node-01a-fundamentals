@@ -15,7 +15,12 @@ exports.getProducts = (req, res, next) => {
         // isAuthenticated: req.session.isLoggedIn
       });
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
+    });
 };
 
 // "Details" button in "Products" page
@@ -33,7 +38,12 @@ exports.getProduct = (req, res, next) => {
         // isAuthenticated: req.session.isLoggedIn
       });
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      // console.log(err)
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
+    });
 };
 
 // Navigation link "Shop"
@@ -53,7 +63,12 @@ exports.getIndex = (req, res, next) => {
         // csrfToken: req.csrfToken() // generates a token which we can then use in our view.
       });
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      // console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
+    });
 };
 
 // Navigation link "Cart"
@@ -74,7 +89,12 @@ exports.getCart = (req, res, next) => {
         // isAuthenticated: req.session.isLoggedIn
       });
     })
-    .catch(err => console.log);
+    .catch(err => {
+      // console.log(erro)
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
+    });
 };
 
 /*
@@ -95,7 +115,10 @@ exports.postCart = (req, res, next) => {
       res.redirect("/cart");
     })
     .catch(err => {
-      console.log(err);
+      // console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
     });
 };
 
@@ -111,7 +134,10 @@ exports.postCartDeleteProduct = (req, res, next) => {
       res.redirect("/cart");
     })
     .catch(err => {
-      console.log(err);
+      // console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
     });
 };
 
@@ -144,7 +170,10 @@ exports.postOrders = (req, res, next) => {
       res.redirect("/orders");
     })
     .catch(err => {
-      console.log(err);
+      // console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
     });
 };
 
@@ -167,7 +196,12 @@ exports.getOrders = (req, res, next) => {
         // isAuthenticated: req.session.isLoggedIn
       });
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
+    });
 };
 
 // "Checkout" button within "Cart" page

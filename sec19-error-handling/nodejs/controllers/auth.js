@@ -175,7 +175,12 @@ exports.postLogin = (req, res, next) => {
           res.redirect("/login");
         });
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
+    });
 };
 
 // Reference only - Login page wtih test user only
@@ -271,7 +276,10 @@ exports.postSignup = (req, res, next) => {
       return sgMail.send(msg);
     })
     .catch(err => {
-      console.log(err);
+      // console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
     });
 };
 
@@ -459,7 +467,10 @@ exports.postReset = (req, res, next) => {
       // })
 
       .catch(err => {
-        console.log(err);
+        // console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500; // You can pass extra information with the error object.
+        return next(err);
       });
   });
 };
@@ -489,7 +500,10 @@ exports.getNewPassword = (req, res, next) => {
       });
     })
     .catch(err => {
-      console.log(err);
+      // console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
     });
 };
 
@@ -518,5 +532,10 @@ exports.postNewPassword = (req, res, next) => {
     .then(result => {
       res.redirect("/login");
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
+    });
 };

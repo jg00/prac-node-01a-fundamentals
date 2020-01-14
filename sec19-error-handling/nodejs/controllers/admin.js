@@ -48,7 +48,7 @@ exports.postAddProduct = (req, res, next) => {
 
   // Now we a Product model managed by Mongoose. Mongoose models comes with functions we can use.
   const product = new Product({
-    _id: new mongoose.Types.ObjectId("5e059eca2f4fd90d48d9f4b7"), // For testing only to cause database technical error by trying to create a new product with existing id.  This causes .catch() below to fire.
+    // _id: new mongoose.Types.ObjectId("5e059eca2f4fd90d48d9f4b7"), // For testing only to cause database technical error by trying to create a new product with existing id.  This causes .catch() below to fire.
     title,
     price,
     description,
@@ -67,25 +67,33 @@ exports.postAddProduct = (req, res, next) => {
       // console.log("Test scenario: An error occurred");
       // console.log(err);
 
-      // One way we could handle error may be to rerender same page and show user.  Status 500 indicates server side error occurred.
-      return res.status(500).render("admin/edit-product", {
-        pageTitle: "Add Product",
-        path: "/admin/add-product",
-        editing: false,
-        hasError: true, // Additional check to display form input values
-        errorMessage: "Database operation failed, please try again.", // Display error feedback
-        // Way to keep user input
-        product: {
-          title: title,
-          imageUrl: imageUrl,
-          price: price,
-          description: description
-        },
-        validationErrors: [] // full [] array of errors.  Empty [] if we do not want to place a red border around input elements.
-      });
+      /*
+        // One way we could handle error may be to rerender same page and show user.  Status 500 indicates server side error occurred.
+        return res.status(500).render("admin/edit-product", {
+          pageTitle: "Add Product",
+          path: "/admin/add-product",
+          editing: false,
+          hasError: true, // Additional check to display form input values
+          errorMessage: "Database operation failed, please try again.", // Display error feedback
+          // Way to keep user input
+          product: {
+            title: title,
+            imageUrl: imageUrl,
+            price: price,
+            description: description
+          },
+          validationErrors: [] // full [] array of errors.  Empty [] if we do not want to place a red border around input elements.
+        });
+      */
 
       // Another way to handle bigger issues and instead display an error page instead of showing same page again.
-      // CONTINUE HERE.
+      // We would then have to place this line of code below everywhere.
+      // res.redirect("/500");
+
+      // Third approach is instead of redirecting we can "throw new Error()" which may be better so as to not duplicate res.redirect("/500") everywhere
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(err);
     });
 };
 
@@ -109,6 +117,8 @@ exports.getEditProduct = (req, res, next) => {
 
   Product.findById(prodId)
     .then(product => {
+      // throw new Error("Dummy error to fire .catch()"); // Testing only
+
       if (!product) {
         return res.redirect("/");
       }
@@ -125,7 +135,10 @@ exports.getEditProduct = (req, res, next) => {
       });
     })
     .catch(err => {
-      console.log(err);
+      // console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(err);
     });
 };
 
@@ -198,7 +211,10 @@ exports.postEditProduct = (req, res, next) => {
     //   res.redirect("/admin/products");
     // })
     .catch(err => {
-      console.log(err);
+      // console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
     });
 
   /* MongoDb version
@@ -246,7 +262,10 @@ exports.getProducts = (req, res, next) => {
       });
     })
     .catch(err => {
-      console.log(err);
+      // console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
     });
 };
 
@@ -261,5 +280,10 @@ exports.postDeleteProduct = (req, res, next) => {
       console.log("DESTROYED PRODUCT");
       res.redirect("/admin/products");
     })
-    .catch(err => console.log(err)); // Catches any errors for 1st or 2nd promise returned
+    .catch(err => {
+      // console.log(err)
+      const error = new Error(err);
+      error.httpStatusCode = 500; // You can pass extra information with the error object.
+      return next(err);
+    }); // Catches any errors for 1st or 2nd promise returned
 };
