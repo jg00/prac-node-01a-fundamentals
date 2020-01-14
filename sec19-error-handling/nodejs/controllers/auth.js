@@ -145,7 +145,7 @@ exports.postLogin = (req, res, next) => {
             req.session.isLoggedIn = true;
             req.session.user = user;
 
-            // Purpose return again is to not execute the of line res.redirect('/login') after this if block.  Again, we purposely did not include a .then.
+            // Purpose return again is to not execute lines after res.redirect('/login') in this if block.  Again, we purposely did not include a .then.
             return req.session.save(err => {
               // console.log(err);
               res.redirect("/"); // no need for return because next code will not be reached nor executed.

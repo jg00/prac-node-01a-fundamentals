@@ -71,7 +71,7 @@ router.post(
       .trim()
       .custom((value, { req }) => {
         if (value !== req.body.password) {
-          throw new Error("Passwords have to match!");
+          throw new Error("Passwords have to match!"); // express validator catches errors and collects them in an array.
         }
         return true;
       })

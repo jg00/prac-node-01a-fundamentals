@@ -1,4 +1,6 @@
 // const mongodb = require("mongodb");
+const mongoose = require("mongoose"); // Only used to test and create _id: mongoose.Types.ObjectId("5e059eca2f4fd90d48d9f4b7")
+
 const Product = require("../models/product");
 const { validationResult } = require("express-validator");
 
@@ -30,7 +32,7 @@ exports.postAddProduct = (req, res, next) => {
     console.log(errors.array());
     return res.status(422).render("admin/edit-product", {
       pageTitle: "Add Product",
-      path: "/admin/edit-product",
+      path: "/admin/add-product",
       editing: false,
       hasError: true, // Additional check to display form input values
       errorMessage: errors.array()[0].msg, // Display error feedback
@@ -46,6 +48,7 @@ exports.postAddProduct = (req, res, next) => {
 
   // Now we a Product model managed by Mongoose. Mongoose models comes with functions we can use.
   const product = new Product({
+    _id: new mongoose.Types.ObjectId("5e059eca2f4fd90d48d9f4b7"), // For testing only to cause database technical error by trying to create a new product with existing id.  This causes .catch() below to fire.
     title,
     price,
     description,
@@ -60,7 +63,30 @@ exports.postAddProduct = (req, res, next) => {
       console.log("Created Product");
       res.redirect("/admin/products"); // This may need to go to "Admin Products" page
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      // console.log("Test scenario: An error occurred");
+      // console.log(err);
+
+      // One way we could handle error may be to rerender same page and show user.  Status 500 indicates server side error occurred.
+      return res.status(500).render("admin/edit-product", {
+        pageTitle: "Add Product",
+        path: "/admin/add-product",
+        editing: false,
+        hasError: true, // Additional check to display form input values
+        errorMessage: "Database operation failed, please try again.", // Display error feedback
+        // Way to keep user input
+        product: {
+          title: title,
+          imageUrl: imageUrl,
+          price: price,
+          description: description
+        },
+        validationErrors: [] // full [] array of errors.  Empty [] if we do not want to place a red border around input elements.
+      });
+
+      // Another way to handle bigger issues and instead display an error page instead of showing same page again.
+      // CONTINUE HERE.
+    });
 };
 
 /*

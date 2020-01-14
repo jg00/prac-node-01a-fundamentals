@@ -57,20 +57,22 @@ app.use((req, res, next) => {
     .then(user => {
       // console.log("MONGOOSE MODEL USER", user);
 
-      // Extra check and handling if we do not find a user
+      // Extra check and handling if we do not find a user.  If user was deleted from db for example and we get undefined our app may crash and that is why we check here to handle what to do if user undefined.
       if (!user) {
         return next();
       }
 
-      req.user = user;
+      req.user = user; // store found user in the request object so for the "entire request" we can access that user object (it is a Mongoose user object)
       next();
     })
     .catch(err => {
       // console.log(err); // Note that not finding a user does not make this catch block fire.  It should fire on technical issues.
 
+      // Again this catch block does not fire if we don't find a user with the id.  It will only fire if there are any technical issues (maybe no read access because server is down).
       // Throw error if we have some technical issue. There is a significat advantage of throwing the error here.
-      // Expressjs gives us a way of handling these errors.
+      // -> Expressjs gives us a way of handling these technical error issues when thrown.
       throw new Error(err);
+      // next()  // Alternatively we could handle by continuing without a user being set
     });
 });
 
