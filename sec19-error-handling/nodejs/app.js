@@ -45,7 +45,20 @@ app.use(
 app.use(csrfProtection); // Any non-GET request your app will now look for CSRF token in your views.
 app.use(flash()); // Now all requests will have a req.flash() function that can be used for flash messages.
 
+// Set fields passed to the views.
 app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLoggedIn; // Only set in controller/auth.js (postLogin)
+  res.locals.csrfToken = req.csrfToken(); // generates a new token for every request which we can then use in our view.
+  next();
+});
+
+app.use((req, res, next) => {
+  // If you throw error "outside" of async code (ie in synchronous code) basically outside of a promise then-catch or outside of a callback
+  // we can reach the Express error handling middleware further below.
+  // -> Outside async cod eyou can just throw the error but inside async code you have to use next(err).
+
+  // throw new Error("Sync Dummy");
+
   if (!req.session.user) {
     return next();
   }
@@ -56,6 +69,7 @@ app.use((req, res, next) => {
   User.findById(req.session.user._id)
     .then(user => {
       // console.log("MONGOOSE MODEL USER", user);
+      // throw new Error("Dummy error to fire .catch()"); // Test only "inside" async code.
 
       // Extra check and handling if we do not find a user.  If user was deleted from db for example and we get undefined our app may crash and that is why we check here to handle what to do if user undefined.
       if (!user) {
@@ -71,16 +85,12 @@ app.use((req, res, next) => {
       // Again this catch block does not fire if we don't find a user with the id.  It will only fire if there are any technical issues (maybe no read access because server is down).
       // Throw error if we have some technical issue. There is a significat advantage of throwing the error here.
       // -> Expressjs gives us a way of handling these technical error issues when thrown.
-      throw new Error(err);
-      // next()  // Alternatively we could handle by continuing without a user being set
-    });
-});
 
-// Set fields passed to the views.
-app.use((req, res, next) => {
-  res.locals.isAuthenticated = req.session.isLoggedIn; // Only set in controller/auth.js (postLogin)
-  res.locals.csrfToken = req.csrfToken(); // generates a new token for every request which we can then use in our view.
-  next();
+      // throw new Error(err); // Important - thorwing error .catch() (ie inside of async code) does not lead to app.use((error, req, res, next) => {..} middleware from being called.
+
+      // In side of asyn code you have to use call next(err) and pass the error to get to the app.use((error, req, res, next) => {..} middleware
+      return next(new Error(err)); // This is detected by Express.
+    });
 });
 
 /*  
@@ -104,9 +114,9 @@ app.use(shopRoutes);
 app.use(authRoutes);
 
 // 204: No Content
-app.use("/favicon.ico", (req, res, next) => {
-  res.status(204).end();
-});
+// app.use("/favicon.ico", (req, res, next) => {
+//   res.status(204).end();
+// });
 
 app.get("/500", errorController.get500); // We could use to redirect to get error page
 
@@ -117,7 +127,15 @@ app.use(errorController.get404); // Catch all middleware if no page found
 // This is like a central Express Error Handling Middleware
 app.use((error, req, res, next) => {
   // res.status(error.httpStatusCode).render(..) // Status can be added here if you were to render() a 500 page.  This is just to show you can pass additional information.
-  res.redirect("/500");
+
+  // res.redirect("/500"); // Commented to avoid infinite loops via redirects.
+
+  console.log("Error Middleware", error);
+  res.status(500).render("500", {
+    pageTitle: "Error!",
+    path: "/500",
+    isAuthenticated: req.session.isLoggedIn
+  });
 });
 
 // Accomodate for deprecated functions like Product.findeOneAndRemove()

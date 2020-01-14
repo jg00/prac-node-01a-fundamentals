@@ -117,7 +117,7 @@ exports.getEditProduct = (req, res, next) => {
 
   Product.findById(prodId)
     .then(product => {
-      // throw new Error("Dummy error to fire .catch()"); // Testing only
+      // throw new Error("Dummy error to fire .catch()"); // Test only
 
       if (!product) {
         return res.redirect("/");
