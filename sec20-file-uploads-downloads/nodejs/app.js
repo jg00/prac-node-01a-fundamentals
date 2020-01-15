@@ -17,6 +17,30 @@ const store = new MongoDBStore({
 
 const csrfProtection = csrf(); // returns a middleware function; You can also pass config params.
 
+// multer file storage
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "images"); // If null error then tell multer it is okay to store in the images folder
+  },
+  filename: (req, file, cb) => {
+    // cb(null, file.filename + "-" + file.originalname); // returns undefined-boat.png
+    cb(null, new Date().toISOString() + "-" + file.originalname); // tip
+  }
+});
+
+// multer file filter
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/jpeg"
+  ) {
+    cb(null, true); // accept file
+  } else {
+    cb(null, false); // do not accept file
+  }
+};
+
 const errorController = require("./controllers/error");
 const User = require("./models/user");
 
@@ -31,7 +55,12 @@ const authRoutes = require("./routes/auth");
 // console.log("NODE_ENV:", process.env.NODE_ENV);
 
 app.use(express.urlencoded({ extended: false }));
-app.use(multer({ dest: "images" }).single("image")); // 'image' is the name of the input in the edit-product.ejs form. Using .single() because we expect only one file.
+
+// app.use(multer({ dest: "images" }).single("image")); // 'image' is the name of the input in the edit-product.ejs form. Using .single() because we expect only one file.
+app.use(
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
+); // Using storage configuration gives us more options.
+
 app.use(express.static(path.join(__dirname, "public")));
 
 // Initialize a session.  Execute as a function and pass setup information.

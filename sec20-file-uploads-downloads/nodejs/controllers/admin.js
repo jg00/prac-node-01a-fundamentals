@@ -28,10 +28,29 @@ exports.postAddProduct = (req, res, next) => {
   // const { title, imageUrl, price, description } = req.body; // before receiving only urlencoded content type
 
   const { title, price, description } = req.body;
-  const imageUrl = req.file;
+  const image = req.file; // returns file object
 
-  console.log("HERE", imageUrl);
+  // console.log("HERE", image);
 
+  // Invalid file input
+  if (!image) {
+    return res.status(422).render("admin/edit-product", {
+      pageTitle: "Add Product",
+      path: "/admin/add-product",
+      editing: false,
+      hasError: true, // Additional check to display form input values
+      errorMessage: "Attached file is not an image.", // Display error feedback
+      product: {
+        title: title,
+        // imageUrl: imageUrl, // no longer text
+        price: price,
+        description: description
+      },
+      validationErrors: [] // full [] array of errors
+    });
+  }
+
+  // Form validation
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     console.log(errors.array());
@@ -43,13 +62,16 @@ exports.postAddProduct = (req, res, next) => {
       errorMessage: errors.array()[0].msg, // Display error feedback
       product: {
         title: title,
-        imageUrl: imageUrl,
+        // imageUrl: imageUrl,
         price: price,
         description: description
       },
       validationErrors: errors.array() // full [] array of errors
     });
   }
+
+  // Form inputs have been validated
+  const imageUrl = image.path; // path: 'images/2020-01-15T14:42:36.848Z-boat.png'; Path to use for fetching that image.
 
   // Now we a Product model managed by Mongoose. Mongoose models comes with functions we can use.
   const product = new Product({
@@ -160,10 +182,12 @@ exports.postEditProduct = (req, res, next) => {
   const {
     productId: prodId,
     title: updatedTitle,
-    imageUrl: updatedImageUrl,
+    // imageUrl: updatedImageUrl,
     description: updatedDescription,
     price: updatedPrice
   } = req.body;
+
+  const image = req.file;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -176,7 +200,7 @@ exports.postEditProduct = (req, res, next) => {
       errorMessage: errors.array()[0].msg, // Display error feedback
       product: {
         title: updatedTitle,
-        imageUrl: updatedImageUrl,
+        // imageUrl: updatedImageUrl,
         price: updatedPrice,
         description: updatedDescription,
         _id: prodId
@@ -198,10 +222,14 @@ exports.postEditProduct = (req, res, next) => {
       if (product.userId.toString() !== req.user._id.toString()) {
         return res.redirect("/");
       }
-      (product.title = updatedTitle),
-        (product.price = updatedPrice),
-        (product.description = updatedDescription),
-        (product.imageUrl = updatedImageUrl);
+      product.title = updatedTitle;
+      product.price = updatedPrice;
+      product.description = updatedDescription;
+
+      // Only update if a new image was selected else keep what is currently in the database for the imageUrl.
+      if (image) {
+        product.imageUrl = image.path;
+      }
 
       return product
         .save() // Purpose of the return here will send the data to the next .then else it print out undefined.

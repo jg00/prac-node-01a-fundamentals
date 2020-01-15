@@ -49,7 +49,7 @@ router.post(
       .isLength({ min: 3 })
       .trim(),
 
-    check("imageUrl").isURL(),
+    // check("imageUrl").isURL(),
 
     body("price").isFloat(),
 
