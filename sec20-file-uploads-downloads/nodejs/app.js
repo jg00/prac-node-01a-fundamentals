@@ -7,6 +7,7 @@ const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session); //Returns a single function that takes the session and returns a MongoDBStore class.
 const csrf = require("csurf");
 const flash = require("connect-flash");
+const multer = require("multer");
 
 const MONGODB_URI = `mongodb://bart:0BPmJVZdUUrIftYg@cluster0-shard-00-00-f9pzz.mongodb.net:27017,cluster0-shard-00-01-f9pzz.mongodb.net:27017,cluster0-shard-00-02-f9pzz.mongodb.net:27017/shop?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority`;
 const store = new MongoDBStore({
@@ -30,6 +31,7 @@ const authRoutes = require("./routes/auth");
 // console.log("NODE_ENV:", process.env.NODE_ENV);
 
 app.use(express.urlencoded({ extended: false }));
+app.use(multer({ dest: "images" }).single("image")); // 'image' is the name of the input in the edit-product.ejs form. Using .single() because we expect only one file.
 app.use(express.static(path.join(__dirname, "public")));
 
 // Initialize a session.  Execute as a function and pass setup information.

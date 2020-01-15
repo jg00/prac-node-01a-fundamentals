@@ -25,7 +25,12 @@ exports.getAddProduct = (req, res, next) => {
 
 // "Add Product" button within "Add Product" page form
 exports.postAddProduct = (req, res, next) => {
-  const { title, imageUrl, price, description } = req.body;
+  // const { title, imageUrl, price, description } = req.body; // before receiving only urlencoded content type
+
+  const { title, price, description } = req.body;
+  const imageUrl = req.file;
+
+  console.log("HERE", imageUrl);
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
