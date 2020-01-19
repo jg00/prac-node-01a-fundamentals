@@ -62,6 +62,7 @@ app.use(
 ); // Using storage configuration gives us more options.
 
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 // Initialize a session.  Execute as a function and pass setup information.
 app.use(
