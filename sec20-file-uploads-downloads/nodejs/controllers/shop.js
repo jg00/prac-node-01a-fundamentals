@@ -1,3 +1,6 @@
+const fs = require("fs");
+const path = require("path");
+
 const Product = require("../models/product");
 // const Cart = require("../models/cart");
 const Order = require("../models/order");
@@ -202,6 +205,52 @@ exports.getOrders = (req, res, next) => {
       error.httpStatusCode = 500; // You can pass extra information with the error object.
       return next(err);
     });
+};
+
+exports.getInvoice = (req, res, next) => {
+  const orderId = req.params.orderId;
+
+  Order.findById(orderId)
+    .then(order => {
+      if (!order) {
+        return next(new Error("No order found!"));
+      }
+
+      if (order.user.userId.toString() !== req.user._id.toString()) {
+        return next(new Error("Unauthorized"));
+      }
+
+      const invoiceName = "invoice-" + orderId + ".pdf";
+      const invoicePath = path.join("data", "invoices", invoiceName);
+
+      /* Reference only - Reads entire file to memory first before serving as response
+      fs.readFile(invoicePath, (err, data) => {
+        if (err) {
+          return next(err);
+        }
+
+        res.setHeader("Content-Type", "application/pdf");
+        // res.set("Content-Disposition", "inline");
+        // res.setHeader("Content-Disposition", "inline");
+        res.setHeader(
+          "Content-Disposition",
+          'inline; filename="' + invoiceName + '"'
+        );
+        res.send(data);
+      });
+      */
+
+      const file = fs.createReadStream(invoicePath);
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        'inline; filename="' + invoiceName + '"'
+      );
+
+      file.pipe(res);
+    })
+    .catch(err => next(err));
 };
 
 // "Checkout" button within "Cart" page
