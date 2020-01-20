@@ -1,6 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
+const PDFDocument = require("pdfkit"); // expoes constructor
+
 const Product = require("../models/product");
 // const Cart = require("../models/cart");
 const Order = require("../models/order");
@@ -223,7 +225,22 @@ exports.getInvoice = (req, res, next) => {
       const invoiceName = "invoice-" + orderId + ".pdf";
       const invoicePath = path.join("data", "invoices", invoiceName);
 
-      /* Reference only - Reads entire file to memory first before serving as response
+      const pdfDoc = new PDFDocument(); // Also a readable stream.
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        'inline; filename="' + invoiceName + '"'
+      );
+
+      pdfDoc.pipe(fs.createWriteStream(invoicePath));
+      pdfDoc.pipe(res);
+
+      pdfDoc.text("Hello world!");
+
+      pdfDoc.end(); // Calling .end() causes writable streams and the reponse ended and therefore the file will be saved and the file sent.
+
+      /* 1 Reference only - Reads entire file to memory first before serving as response
       fs.readFile(invoicePath, (err, data) => {
         if (err) {
           return next(err);
@@ -240,6 +257,7 @@ exports.getInvoice = (req, res, next) => {
       });
       */
 
+      /* 2 Reference only - Sample file stream
       const file = fs.createReadStream(invoicePath);
 
       res.setHeader("Content-Type", "application/pdf");
@@ -249,6 +267,7 @@ exports.getInvoice = (req, res, next) => {
       );
 
       file.pipe(res);
+      */
     })
     .catch(err => next(err));
 };
