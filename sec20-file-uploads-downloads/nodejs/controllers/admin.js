@@ -1,5 +1,6 @@
 // const mongodb = require("mongodb");
 const mongoose = require("mongoose"); // Only used to test and create _id: mongoose.Types.ObjectId("5e059eca2f4fd90d48d9f4b7")
+const fileHelper = require("../util/file");
 
 const Product = require("../models/product");
 const { validationResult } = require("express-validator");
@@ -227,7 +228,9 @@ exports.postEditProduct = (req, res, next) => {
       product.description = updatedDescription;
 
       // Only update if a new image was selected else keep what is currently in the database for the imageUrl.
+      // In addtion, since updating with a new image we can delete the previous file at the file path
       if (image) {
+        fileHelper.deleteFile(product.imageUrl);
         product.imageUrl = image.path;
       }
 
@@ -307,8 +310,15 @@ exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
   // console.log("DELETE THIS", prodId);
 
-  // Product.findByIdAndRemove(prodId)
-  Product.deleteOne({ _id: prodId, userId: req.user._id })
+  Product.findById(prodId)
+    .then(product => {
+      if (!product) {
+        return next(new Error("Product not found"));
+      }
+
+      fileHelper.deleteFile(product.imageUrl); // Delete the image and delete the product itself
+      return Product.deleteOne({ _id: prodId, userId: req.user._id }); // // Product.findByIdAndRemove(prodId)
+    })
     .then(() => {
       console.log("DESTROYED PRODUCT");
       res.redirect("/admin/products");
