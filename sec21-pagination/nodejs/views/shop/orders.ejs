@@ -1,0 +1,29 @@
+<%- include('../includes/head.ejs') %>
+
+  </head>
+
+  <body>
+    <!-- Header Section > nav -->
+    <%- include('../includes/navigation.ejs') %>
+    <main>
+      <% if (orders.length <= 0) { %>
+      <h1>No Orders</h1>
+      <% } else { %>
+      <h1>Order History</h1>
+      <ul>
+        <% orders.forEach(order => {  %>
+          <li>
+            <h3>
+              #<%= order._id %> - <a href='/orders/<%= order._id %>'>Invoice</a>
+            </h3>
+              <ul>
+                <% order.products.forEach(p => { %>
+                  <li><%= p.product.title %> (<%= p.quantity %>)</li>
+                <% }) %>
+              </ul>
+          </li>
+        <% }) %>
+        </ul> 
+      <% } %> 
+    </main>
+    <%- include('../includes/end.ejs') %>
