@@ -1,7 +1,10 @@
 const express = require("express");
 const app = express();
+const mongoose = require("mongoose");
 
 const feedRoutes = require("./routes/feed");
+
+const MONGODB_URI = `mongodb://bart:0BPmJVZdUUrIftYg@cluster0-shard-00-00-f9pzz.mongodb.net:27017,cluster0-shard-00-01-f9pzz.mongodb.net:27017,cluster0-shard-00-02-f9pzz.mongodb.net:27017/messages?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority`;
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json()); // application/json
@@ -23,4 +26,9 @@ app.use((req, res, next) => {
 
 app.use("/feed", feedRoutes);
 
-app.listen(8080, () => console.log("Server started"));
+mongoose
+  .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(result => {
+    app.listen(8080, () => console.log("Server started"));
+  })
+  .catch(err => console.log(err));
