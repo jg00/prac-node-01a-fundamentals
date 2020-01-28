@@ -22,10 +22,15 @@ exports.getPosts = (req, res, next) => {
 exports.createPost = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(422).json({
-      message: "Validation failed, entered data is incorrect.",
-      errors: errors.array()
-    });
+    const error = new Error("Validation failed, entered data is incorrect"); // error.message is a property that will contain the message by default.
+    error.statusCode = 422; // Add a custom property (any name) to your error object
+    throw error;
+
+    // throw error instead
+    // return res.status(422).json({
+    //   message: "Validation failed, entered data is incorrect.",
+    //   errors: errors.array()
+    // });
   }
 
   const title = req.body.title;
@@ -49,7 +54,14 @@ exports.createPost = (req, res, next) => {
         post: result
       });
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      // console.log(err)
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      // thorw err - Remember throwing error inside async code will not fire the overall error handler.  You have to pass the err.
+      next(err);
+    });
 
   // res.status(201).json({
   //   message: "Post created successfully!",

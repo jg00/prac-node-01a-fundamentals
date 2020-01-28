@@ -1,3 +1,5 @@
+const path = require("path");
+
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -8,6 +10,8 @@ const MONGODB_URI = `mongodb://bart:0BPmJVZdUUrIftYg@cluster0-shard-00-00-f9pzz.
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json()); // application/json
+
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 // Deal with CORS issue
 app.use((req, res, next) => {
@@ -25,6 +29,13 @@ app.use((req, res, next) => {
 });
 
 app.use("/feed", feedRoutes);
+
+app.use((error, req, res, next) => {
+  console.log(error);
+  const status = error.statusCode || 500;
+  const message = error.message; // This property exists by default and holds the message passed to the Error constructor
+  res.status(status).json({ message: message });
+});
 
 mongoose
   .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
