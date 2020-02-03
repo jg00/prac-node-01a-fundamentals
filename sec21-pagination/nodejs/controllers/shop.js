@@ -7,17 +7,40 @@ const Product = require("../models/product");
 // const Cart = require("../models/cart");
 const Order = require("../models/order");
 
+const ITEMS_PER_PAGE = 2;
+
 // Navigation link "Products"
 exports.getProducts = (req, res, next) => {
+  const page = +req.query.page || 1;
+  let totalItems;
+
   Product.find()
+    .countDocuments()
+    .then(numProducts => {
+      totalItems = numProducts;
+
+      return Product.find()
+        .skip((page - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE);
+    })
     .then(products => {
-      // console.log("getProducts", products); // [{},{}..]
+      // console.log(".getIndex", products); // [{},{}..]
+      // console.log("CHECK2", req.session.user);
+      // console.log("CHECK2", req.session.isLoggedIn);
 
       res.render("shop/product-list", {
-        prods: products, // Inject as an object with a key name that we can refer to in the template.
+        prods: products,
         pageTitle: "All Products",
-        path: "/products"
-        // isAuthenticated: req.session.isLoggedIn
+        path: "/products",
+
+        currentPage: page,
+        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE)
+        // isAuthenticated: req.session.isLoggedIn,
+        // csrfToken: req.csrfToken() // generates a token which we can then use in our view.
       });
     })
     .catch(err => {
@@ -53,8 +76,18 @@ exports.getProduct = (req, res, next) => {
 
 // Navigation link "Shop"
 exports.getIndex = (req, res, next) => {
-  // Sequelize model
+  const page = +req.query.page || 1;
+  let totalItems;
+
   Product.find()
+    .countDocuments()
+    .then(numProducts => {
+      totalItems = numProducts;
+
+      return Product.find()
+        .skip((page - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE);
+    })
     .then(products => {
       // console.log(".getIndex", products); // [{},{}..]
       // console.log("CHECK2", req.session.user);
@@ -63,7 +96,14 @@ exports.getIndex = (req, res, next) => {
       res.render("shop/index", {
         prods: products,
         pageTitle: "Shop",
-        path: "/"
+        path: "/",
+
+        currentPage: page,
+        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE)
         // isAuthenticated: req.session.isLoggedIn,
         // csrfToken: req.csrfToken() // generates a token which we can then use in our view.
       });
